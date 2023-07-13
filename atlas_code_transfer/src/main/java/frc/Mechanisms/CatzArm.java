@@ -206,11 +206,9 @@ public class CatzArm
 
                     if(DriverStation.isAutonomousEnabled() && Robot.selectedGamePiece == Robot.GP_CONE)
                     {
-                        System.out.println("in s");
                         if(elevatorPosition >= POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR && 
                            Robot.intake.isIntakeInPos())
                         {
-                            System.out.println("A-arm extend cmd");
                             armMtr.set(ControlMode.Position, POS_ENC_CNTS_EXTEND);
                             highExtendProcess = false;
                         }
@@ -219,7 +217,6 @@ public class CatzArm
                     {
                         if(elevatorPosition >= POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR)
                         {
-                            System.out.println("Tarm extend cmd");
                             armMtr.set(ControlMode.Position, POS_ENC_CNTS_EXTEND);
                             highExtendProcess = false; 
                         }
