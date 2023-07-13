@@ -10,7 +10,8 @@ import frc.robot.Robot.gameModeLED;
 @SuppressWarnings("unused")
 public class CatzRGB 
 {
-    enum LEDSections{
+    enum LEDSections
+    {
         //dummy endpoints 65 total 34 left 31 right
         IntakeL(31, 32),   
         ArmL(22, 23),
@@ -23,7 +24,8 @@ public class CatzRGB
         //endpoints are inclusive
         private int start;
         private int end;
-        LEDSections(int start, int end){
+        LEDSections(int start, int end)
+        {
             this.start = start;
             this.end = end;
         }
@@ -66,7 +68,8 @@ public class CatzRGB
     private void threadInit(){
         flowThread = new Thread(() ->
         {
-            while(true){//flowEnabled || rainbowEnabled){ 
+            while(true){//flowEnabled || rainbowEnabled)
+            { 
                 RainbowPeriodic();
                 FlowPeriodic();
                 Timer.delay(THREAD_PERIOD);
@@ -76,14 +79,30 @@ public class CatzRGB
         flowThread.start();
     }
 
-    public ColorMethod doNothing = (color) -> {};
+    public ColorMethod doNothing = (color) -> {}; //by using this special syntax called lambda, you essentially create a new instance of the ColorMethod and override its function "execute".
+                                                  //this is a short verson of:
+                                                  /*
+                                                   * public ColorMethod doNothing = new ColorMethod() {
+                                                   *                                    @Override
+                                                   *                                    public void execute(Color... param){
+                                                   * 
+                                                   *                                    }
+                                                   *                                }
+                                                   * 
+                                                   * but since there is only one function in the interface, you can shorten it to: public ColorMethod doNothing = (color) -> {}
+                                                   * 
+                                                   * the "(color)"" is the parameter of the "execute" method
+                                                   */
     
+    //why are there two "fillLEDBuffer" methods?
+
     //endpoints are inclusive
     public void fillLEDBuffer(int first, int last, Color color)
     {
         rainbowEnabled = false;
         flowEnabled = false;
-        for(int i=first; i<=last; i++){
+        for(int i=first; i<=last; i++)
+        {
             ledBuffer.setLED(i, color);
         }
     }
@@ -92,7 +111,8 @@ public class CatzRGB
     {
         rainbowEnabled = false;
         flowEnabled = false;
-        for(int i=0; i<LED_COUNT; i++){
+        for(int i=0; i<LED_COUNT; i++)
+        {
             ledBuffer.setLED(i, color);
         }
     }
@@ -137,7 +157,7 @@ public class CatzRGB
 
         flowEnabled = false;
         rainbowEnabled = false;
-        flowFirst = -1; //do not question
+        flowFirst = -1; //do not question //???
 
         flowMovingColor = color[0];
         flowBackgroundColor = color[1];
