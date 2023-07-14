@@ -107,7 +107,7 @@ public class CatzAutonomousPaths
         chosenPath.addOption       ("Center Score 1 Mid Balance",  CENTER_SCORE_1_MID_BALANCE);
         chosenPath.addOption       ("Center Score 1 High Balance", CENTER_SCORE_1_HIGH_BALANCE);
 
-        chosenPath.addOption       ("Right Score 1 low cube",          RIGHT_SCORE_1_LOW_CUBE);
+        chosenPath.addOption       ("Right Score 1 low cube",          RIGHT_SCORE_1_LOW_CUBE);  //TBD created during comp,should we revert back? How does trajectory play into auton?
         chosenPath.addOption       ("Right Score 2 low cube",          RIGHT_SCORE_2_LOW_CUBE);
         chosenPath.addOption       ("Right Score 1 Balance low cube",  RIGHT_SCORE_1_BALANCE_LOW_CUBE);
 

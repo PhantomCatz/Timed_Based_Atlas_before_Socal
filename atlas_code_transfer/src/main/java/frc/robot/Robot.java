@@ -137,7 +137,7 @@ public class Robot extends TimedRobot
   public static CatzRGB        led = new CatzRGB();
 
   //---------------------------------------------------------------------------------------------
-  public enum mechMode{
+  public enum mechMode{ //TBD should we adopt code orange and 6328 k&B brace style
     AutoMode(Color.kGreen),
     ManualHoldMode(Color.kCyan),
     ManualMode(Color.kRed);
@@ -182,11 +182,6 @@ public class Robot extends TimedRobot
   public static gamePiece currentGamePiece = gamePiece.None;
 
 
-  BooleanLogEntry myBooleanLog;
-  DoubleLogEntry myDoubleLog;
-  StringLogEntry myStringLog;
-
-  DataLog log;
   /*-----------------------------------------------------------------------------------------
   *  
   *  robotXxx
@@ -200,10 +195,6 @@ public class Robot extends TimedRobot
   @Override
   public void robotInit() 
   {
-    log = DataLogManager.getLog();
-    myBooleanLog = new BooleanLogEntry(log, "/my/boolean");
-    myDoubleLog = new DoubleLogEntry(log, "/my/double");
-    myStringLog = new StringLogEntry(log, "/my/string");
     //-----------------------------------------------------------------------------------------
     //  Shared Libraries & Utilities
     //-----------------------------------------------------------------------------------------
@@ -424,16 +415,12 @@ public class Robot extends TimedRobot
       led.matchDone = true;
 
     }
-    else if(DriverStation.getMatchTime() < 15.0)
+    else if(DriverStation.getMatchTime() < 15.0) //TBD commented out during comp?
     {
       led.endGame = true;
     }
     */
 
-    SmartDashboard.putNumber("elv enc", elevator.getElevatorEncoder());
-    myBooleanLog.append(true);
-    myDoubleLog.append(elevator.getElevatorEncoder());
-    myStringLog.append("wow!");
   }
 
 

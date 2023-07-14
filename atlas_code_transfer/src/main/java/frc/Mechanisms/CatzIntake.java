@@ -79,7 +79,7 @@ public class CatzIntake
 
     private final double INTAKE_CUBE_ENC_POS        =  -147.000 + WRIST_ABS_ENC_OFFSET_DEG;//1324.0 + WRIST_ABS_ENC_OFFSET;    //-335
     private final double INTAKE_CONE_ENC_POS_GROUND =  -184.524 + WRIST_ABS_ENC_OFFSET_DEG;//-306.0  + WRIST_ABS_ENC_OFFSET;  //-1295  
-    private final double INTAKE_CONE_ENC_POS_SINGLE =  -116.400 + WRIST_ABS_ENC_OFFSET_DEG;//2089.0 + WRIST_ABS_ENC_OFFSET;  //1100
+    private final double INTAKE_CONE_ENC_POS_SINGLE =  -116.400 + WRIST_ABS_ENC_OFFSET_DEG;//2089.0 + WRIST_ABS_ENC_OFFSET;  //1100 //TBD should we continue using inches or should we reply on counts
 
     private final double SCORE_CUBE_ENC_POS         =  -104.000 + WRIST_ABS_ENC_OFFSET_DEG;//1859.0 + WRIST_ABS_ENC_OFFSET;  //870     // Applies to low-mid-high
 
@@ -400,7 +400,7 @@ public class CatzIntake
                     
                 case Robot.COMMAND_UPDATE_SCORE_LOW_CONE :
                     targetPositionDeg = SCORE_CONE_LOW_ENC_POS;
-                    Timer.delay(0.1);//wait for arm to deploy
+                    Timer.delay(0.1);//wait for arm to deploy -TBD is this a temp fix
                     break;
     
                 case Robot.COMMAND_UPDATE_SCORE_LOW_CUBE :
@@ -442,7 +442,7 @@ public class CatzIntake
     *
     *---------------------------------------------------------------------------------------------*/
     public void resetPID(){
-        pidEnable = false;
+        pidEnable = false; //-TBD do we still need this
         pid.reset();
     }
 

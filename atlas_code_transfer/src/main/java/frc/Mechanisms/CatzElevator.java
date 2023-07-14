@@ -301,14 +301,13 @@ public class CatzElevator
                 }
                 
                 currentPosition = elevatorMtr.getSelectedSensorPosition();
-                //System.out.println("Elevator: " + currentPosition);
                 positionError = currentPosition - targetPosition;
 
                 if((Math.abs(positionError) <= ELEVATOR_POS_ERROR_THRESHOLD) && targetPosition != NO_TARGET_POSITION)
                 {
                     targetPosition = NO_TARGET_POSITION;
                     numConsectSamples++;
-                        if(numConsectSamples >= 10)
+                        if(numConsectSamples >= 10) //-TBD this hasn;t been working for some mechanisms
                         {   
                             elevatorInPosition = true;
                         }
