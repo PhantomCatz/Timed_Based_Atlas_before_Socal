@@ -68,7 +68,7 @@ public class CatzRGB
     private void threadInit(){
         flowThread = new Thread(() ->
         {
-            while(true){//flowEnabled || rainbowEnabled)
+            while(true)//flowEnabled || rainbowEnabled)
             { 
                 RainbowPeriodic();
                 FlowPeriodic();
