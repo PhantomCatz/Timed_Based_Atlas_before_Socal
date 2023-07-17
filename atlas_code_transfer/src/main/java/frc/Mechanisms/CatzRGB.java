@@ -68,7 +68,6 @@ public class CatzRGB
     private void threadInit(){//TBD issue with thread...apparent syntax issue?
         flowThread = new Thread(() ->
         {
-            while(true)
             while(true)//flowEnabled || rainbowEnabled)
             { 
                 RainbowPeriodic();
