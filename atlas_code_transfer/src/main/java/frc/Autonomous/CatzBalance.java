@@ -28,7 +28,7 @@ public class CatzBalance
 
     public final double ANG_SLOWBAND = 10.0; 
     public final double ANG_GAIN = 0.008; //0.007
-    public final double RATE_GAIN = 0.002; //0.002
+    public final double RATE_GAIN = 0.002; //0.002 //TBD which values are the most optimal?
     public final double MAX_POWER = 0.30;
     public final double BALANCE_THREAD_PERIOD = 0.02;
 

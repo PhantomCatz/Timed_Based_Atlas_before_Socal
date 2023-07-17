@@ -65,15 +65,17 @@ public class CatzRGB
         threadInit();
     }
 
-    private void threadInit(){
+    private void threadInit(){//TBD issue with thread...apparent syntax issue?
         flowThread = new Thread(() ->
         {
-            while(true){//flowEnabled || rainbowEnabled)
+            while(true)
+        {//flowEnabled || rainbowEnabled)
             { 
                 RainbowPeriodic();
                 FlowPeriodic();
                 Timer.delay(THREAD_PERIOD);
             }
+        }
         });
 
         flowThread.start();

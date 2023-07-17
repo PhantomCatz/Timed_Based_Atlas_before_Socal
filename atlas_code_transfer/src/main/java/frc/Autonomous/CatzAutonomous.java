@@ -307,6 +307,11 @@ public class CatzAutonomous
         Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
     }
 
+    /*-----------------------------------------------------------------------------------------
+    *
+    *  Drivestright on to charge station(modified pid values)
+    *
+    *----------------------------------------------------------------------------------------*/
     public void DriveStraightONChargeStationFromBack(double distanceInch, double directionDeg, double maxTime)
     {
         double distanceRemainInch    = 0.0;

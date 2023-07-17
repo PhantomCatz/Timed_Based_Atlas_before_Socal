@@ -115,7 +115,7 @@ public class CatzElevator
 
 
     private final double CLOSELOOP_ERROR_THRESHOLD_LOW = 50; 
-   // private final double CLOSELOOP_ERROR_THRESHOLD_HIGH_MID = 300; 
+   // private final double CLOSELOOP_ERROR_THRESHOLD_HIGH_MID = 300; //tbd remove
     private final double CLOSELOOP_ERROR_THRESHOLD_HIGH_MID = 225; 
 
     public CatzLog data;
@@ -162,7 +162,7 @@ public class CatzElevator
 
         elevatorMtr.selectProfileSlot(0, 0);
 
-        elevatorMtr.configAllowableClosedloopError(0, CLOSELOOP_ERROR_THRESHOLD_HIGH_MID);//make this constant and make values in inches
+        elevatorMtr.configAllowableClosedloopError(0, CLOSELOOP_ERROR_THRESHOLD_HIGH_MID);//TBD make this constant and make values in inches
         
         elevatorMtr.set(ControlMode.PercentOutput, MANUAL_CONTROL_PWR_OFF);
 
@@ -357,7 +357,7 @@ public class CatzElevator
 
 
         elevatorMtr.config_kP(0, ELEVATOR_KP_MID);
-        elevatorMtr.config_kI(0, ELEVATOR_KI_MID);
+        elevatorMtr.config_kI(0, ELEVATOR_KI_MID); //-tbd set slots to positions
         elevatorMtr.config_kD(0, ELEVATOR_KD_MID);
         elevatorMtr.set(ControlMode.Position, POS_ENC_CNTS_MID_CONE, DemandType.ArbitraryFeedForward, HOLDING_FEED_FORWARD);
         targetPosition = POS_ENC_CNTS_MID_CONE;

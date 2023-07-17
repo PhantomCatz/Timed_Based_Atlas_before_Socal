@@ -58,7 +58,7 @@ public class CatzArm
     private final double POS_ENC_INCH_PICKUP = 4.157;
 
     private final double POS_ENC_CNTS_RETRACT  = 0.0+154;//POS_ENC_INCH_RETRACT * CNTS_PER_INCH_CONVERSION_FACTOR;
-    private final double POS_ENC_CNTS_EXTEND  = 44000.0+154;//POS_ENC_INCH_EXTEND * CNTS_PER_INCH_CONVERSION_FACTOR;
+    private final double POS_ENC_CNTS_EXTEND  = 44000.0+154;//POS_ENC_INCH_EXTEND * CNTS_PER_INCH_CONVERSION_FACTOR; //TBD we should continue with cnts per inch 
     private final double POS_ENC_CNTS_PICKUP = 22000.0+154;//POS_ENC_INCH_PICKUP * CNTS_PER_INCH_CONVERSION_FACTOR;
     private final double POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR = 73000.0;
 
@@ -85,7 +85,7 @@ public class CatzArm
     private boolean armInPosition = false;
     private int numConsectSamples = 0;
 
-    private final double ARM_POS_ERROR_THRESHOLD = 2700.0; //0.5 inches    previously 500 enc counts
+    private final double ARM_POS_ERROR_THRESHOLD = 2700.0; //0.5 inches    previously 500 enc counts //TBD what does this mean
     private final double NO_TARGET_POSITION = -999999.0;
 
     CatzLog data;
@@ -204,7 +204,7 @@ public class CatzArm
                 {
                     elevatorPosition = Robot.elevator.getElevatorEncoder();
 
-                    if(DriverStation.isAutonomousEnabled() && Robot.selectedGamePiece == Robot.GP_CONE)
+                    if(DriverStation.isAutonomousEnabled() && Robot.selectedGamePiece == Robot.GP_CONE)//TBD explain why we need to wait for intake in autonomous and when we have a cone
                     {
                         if(elevatorPosition >= POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR && 
                            Robot.intake.isIntakeInPos())
@@ -224,7 +224,6 @@ public class CatzArm
                 }
 
                 currentPosition = armMtr.getSelectedSensorPosition();
-                //System.out.println("Arm: " + currentPosition);
                 positionError = currentPosition - targetPosition;
                 if  ((Math.abs(positionError) <= ARM_POS_ERROR_THRESHOLD) && targetPosition != NO_TARGET_POSITION)
                 {

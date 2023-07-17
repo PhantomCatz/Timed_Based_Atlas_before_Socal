@@ -86,13 +86,11 @@ public class CatzSwerveModule
     public void setBrakeMode()
     {
         STEER_MOTOR.setIdleMode(IdleMode.kBrake);
-        //DRIVE_MOTOR.setNeutralMode(NeutralMode.Brake); //REMOVE AFTER TESTING
 
     }
     public void setCoastMode()
     {
         STEER_MOTOR.setIdleMode(IdleMode.kCoast);
-        //DRIVE_MOTOR.setNeutralMode(NeutralMode.Coast); //REMOVE AFTER TESTING
     }
 
     public double closestAngle(double startAngle, double targetAngle)

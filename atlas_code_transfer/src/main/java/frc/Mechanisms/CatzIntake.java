@@ -218,7 +218,7 @@ public class CatzIntake
                     if  ((Math.abs(positionError) <= INTAKE_POS_ERROR_THRESHOLD_DEG))
                     {
                         numConsectSamples++;
-                        if(numConsectSamples >= 1)
+                        if(numConsectSamples >= 1)  //-TBD how can we raise the counter?
                         {   
                             intakeInPosition = true;
                         }
@@ -248,7 +248,7 @@ public class CatzIntake
 
                     //-------------------------------------------------------------
                     //  checking if we did not get updated position value(Sampling Issue).
-                    //  If no change in position, this give invalid target power(kD issue).
+                    //  If no change in position, this give invalid target power(kD issue). -TBD shouldn't d term zero out?
                     //  Therefore, go with prev targetPower Value.
                     //-------------------------------------------------------------------
                     if(prevCurrentPosition == currentPosition)
@@ -302,7 +302,7 @@ public class CatzIntake
     *---------------------------------------------------------------------------------------------*/
     public void cmdProcIntake(double wristPwr, boolean rollersIn, boolean rollersOut, boolean manualMode, 
                                                                                       boolean softLimitOverride, 
-                                                                                      int state, 
+                                                                                      int CmdStateUpdate, 
                                                                                       int gamePiece)
     {
         if(manualMode){                
@@ -325,7 +325,6 @@ public class CatzIntake
                     targetPositionDeg = Math.max((targetPositionDeg + wristPwr * MANUAL_HOLD_STEP_SIZE), SOFT_LIMIT_REVERSE);
                 }
                 prevCurrentPosition = -prevCurrentPosition; //intialize for first time through thread loop, that checks stale position values
-
             }
             else //in full manual mode
             {
@@ -372,7 +371,7 @@ public class CatzIntake
 
         
 
-        if(state != Robot.COMMAND_STATE_NULL)
+        if(CmdStateUpdate != Robot.COMMAND_STATE_NULL)
         {
             pid.reset();
             pidEnable = true;
@@ -380,7 +379,7 @@ public class CatzIntake
             Robot.intakeControlMode = mechMode.AutoMode;
             prevCurrentPosition = -prevCurrentPosition; //intialize for first time through thread loop, that checks stale position values
 
-            switch(state)
+            switch(CmdStateUpdate)
             {
                 case Robot.COMMAND_UPDATE_STOW :
                     targetPositionDeg = STOW_ENC_POS;

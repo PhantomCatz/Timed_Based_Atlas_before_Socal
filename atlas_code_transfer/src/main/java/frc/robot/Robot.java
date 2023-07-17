@@ -390,7 +390,7 @@ public class Robot extends TimedRobot
                    xboxAux.getLeftTriggerAxis()  >= 0.1,   //Manual Retract Arm 
                    commandedStateUpdate); 
 
-    intake.cmdProcIntake(-xboxAux.getLeftY(),                   //Semi-manual override
+    intake.cmdProcIntake(-xboxAux.getLeftY(),                   //Semi-manual override TBD value sign switch should be done inside class.
                           xboxAux.getRightBumper() | xboxDrv.getRightBumper(),             //Roller in 
                           xboxAux.getLeftBumper() | xboxDrv.getLeftBumper(),              //Roller out
                           xboxAux.getLeftStickButtonPressed(),  //Enter all-manual mode
