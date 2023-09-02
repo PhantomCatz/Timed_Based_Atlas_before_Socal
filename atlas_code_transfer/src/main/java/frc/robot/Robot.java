@@ -22,19 +22,21 @@ import frc.DataLogger.CatzLog;
 import frc.DataLogger.DataCollection;
 
 import frc.Mechanisms.CatzDrivetrain;
-import frc.Mechanisms.CatzElevator;
 import frc.Mechanisms.CatzArm;
 import frc.Mechanisms.CatzIntake;
 import frc.Mechanisms.CatzRGB;
 import frc.Mechanisms.ColorMethod;
+import frc.Mechanisms.elevator.CatzElevator;
 import frc.Autonomous.*;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.util.datalog.BooleanLogEntry;
-import edu.wpi.first.util.datalog.DataLog;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
-import edu.wpi.first.util.datalog.StringLogEntry;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 
 /**
@@ -43,7 +45,7 @@ import edu.wpi.first.util.datalog.StringLogEntry;
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
-public class Robot extends TimedRobot 
+public class Robot extends LoggedRobot 
 {
   //---------------------------------------------------------------------------------------------
   //  Shared Libraries & Utilities

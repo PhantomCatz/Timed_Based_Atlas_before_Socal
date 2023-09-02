@@ -5,7 +5,7 @@ import java.util.concurrent.TimeoutException;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
+import frc.robot.CatzConstants;
 import frc.robot.Robot;
 
 /*****************************************************************************************
@@ -16,7 +16,7 @@ import frc.robot.Robot;
 @SuppressWarnings("unused")
 public class CatzAutonomousPaths
 {  
-    public final SendableChooser<Boolean> chosenAllianceColor = new SendableChooser<>();
+    public final SendableChooser<Enum> chosenAllianceColor = new SendableChooser<>();
     private final SendableChooser<Integer> chosenPath         = new SendableChooser<>();
 
     /*------------------------------------------------------------------------------------
@@ -91,8 +91,8 @@ public class CatzAutonomousPaths
 
     public CatzAutonomousPaths()
     {
-        chosenAllianceColor.setDefaultOption("Blue Alliance", Robot.constants.BLUE_ALLIANCE);
-        chosenAllianceColor.addOption       ("Red Alliance",  Robot.constants.RED_ALLIANCE);
+        chosenAllianceColor.setDefaultOption("Blue Alliance", CatzConstants.AllianceColor.BlUE_ALLIANCE);
+        chosenAllianceColor.addOption       ("Red Alliance",  CatzConstants.AllianceColor.RED_ALLIANCE);
         SmartDashboard.putData              ("Alliance Color", chosenAllianceColor);
 
         chosenPath.setDefaultOption("Left Score 1 low cube",           LEFT_SCORE_1_LOW_CUBE);   
@@ -225,7 +225,7 @@ public class CatzAutonomousPaths
     public void SidePickup(){
         double direction;
 
-        if(chosenAllianceColor.getSelected() == Robot.constants.RED_ALLIANCE)
+        if(chosenAllianceColor.getSelected() == CatzConstants.AllianceColor.RED_ALLIANCE)
         {
             direction = RIGHT;
         }

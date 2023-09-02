@@ -1,4 +1,4 @@
-package frc.Mechanisms;
+package frc.Mechanisms.elevator;
 
 import frc.robot.Robot;
 import frc.robot.Robot.mechMode;
