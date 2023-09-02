@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
+import frc.robot.CatzConstants;
 import frc.robot.Robot;
 import frc.robot.Robot.gameModeLED;
 
@@ -122,7 +123,7 @@ public class CatzRGB
     };
 
     public ColorMethod oneColorFillAllianceColor = (color) -> {
-        fillLEDBuffer(boolToAllianceColor(Robot.paths.chosenAllianceColor.getSelected()));
+        fillLEDBuffer(enumToAllianceColor(Robot.paths.chosenAllianceColor.getSelected()));
     };
 
     public ColorMethod startFlowingRainbow = (color) -> {
@@ -196,8 +197,8 @@ public class CatzRGB
         led.setData(ledBuffer);
     }
 
-    public Color boolToAllianceColor(boolean bool){
-        if(bool){
+    public Color enumToAllianceColor(Enum bool){
+        if(bool == CatzConstants.AllianceColor.BlUE_ALLIANCE){
             return Color.kBlue;
         }
         else{

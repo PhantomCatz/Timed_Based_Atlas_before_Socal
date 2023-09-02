@@ -10,6 +10,7 @@ public interface ElevatorIO
         public double elevatorEncoderCnts = 0.0;
         public boolean isRevLimitSwitchClosed;
         public boolean isFwdLimitSwitchClosed;
+        public double elevatorClosesloopError = 0.0;
     }
 
     public default void updateInputs(ElevatorIOInputs inputsIO) {}

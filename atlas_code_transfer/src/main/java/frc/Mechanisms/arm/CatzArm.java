@@ -1,4 +1,6 @@
-package frc.Mechanisms;
+package frc.Mechanisms.arm;
+
+import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -19,7 +21,8 @@ import frc.robot.Robot.mechMode;
 
 public class CatzArm
 {
-    private WPI_TalonFX armMtr;
+    private final ArmIO io;
+    private final ArmIOInputsAutoLogged  inputs = new ArmIOInputsAutoLogged();
 
     private final int ARM_MC_ID = 20;
 
@@ -93,27 +96,19 @@ public class CatzArm
 
     public CatzArm()
     {
-        armMtr = new WPI_TalonFX(ARM_MC_ID);
+        switch(CatzConstants.currentMode)
+        {
+            case REAL:
+                io = new ArmIOReal();
+                break;
+            case SIM :
+                io = null;// new ArmIOSim();
+                break;
+            default:
+                io = new ArmIOReal() {};
+                break;
+        }
 
-        armMtr.configFactoryDefault();
-
-        armMtr.setNeutralMode(NeutralMode.Brake);
-        armMtr.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen);
-        armMtr.overrideLimitSwitchesEnable(LIMIT_SWITCH_MONITORED);
-
-        armMtr.config_kP(0, ARM_KP);
-        armMtr.config_kI(0, ARM_KI);
-        armMtr.config_kD(0, ARM_KD);
-
-        armCurrentLimit = new SupplyCurrentLimitConfiguration(ENABLE_CURRENT_LIMIT, CURRENT_LIMIT_AMPS, CURRENT_LIMIT_TRIGGER_AMPS, CURRENT_LIMIT_TIMEOUT_SECONDS);
-
-        armMtr.configSupplyCurrentLimit(armCurrentLimit);
-
-        armMtr.configAllowableClosedloopError(0, ARM_CLOSELOOP_ERROR);
-
-        armMtr.set(ControlMode.PercentOutput, MANUAL_CONTROL_PWR_OFF);
-
-        startArmThread();
 
     }
 
@@ -126,6 +121,11 @@ public class CatzArm
     public void cmdProcArm(boolean armExtend, boolean armRetract,
                             int cmdUpdateState)
     {
+        io.updateInputs(inputs);
+        Logger.getInstance().processInputs("Arm", inputs);
+    
+        checkLimitSwitches();
+        
         switch(cmdUpdateState)
         {
             case Robot.COMMAND_UPDATE_PICKUP_GROUND_CONE :    
@@ -135,11 +135,9 @@ public class CatzArm
             case Robot.COMMAND_UPDATE_SCORE_LOW_CUBE:
                 highExtendProcess = false;
                 Robot.armControlMode = mechMode.AutoMode;
-                armMtr.set(ControlMode.Position, POS_ENC_CNTS_PICKUP);
+                io.armSetPickupPosIO();
                 armInPosition = false;
                 targetPosition = POS_ENC_CNTS_PICKUP;
-
-                
             break;
 
             case Robot.COMMAND_UPDATE_SCORE_HIGH_CONE:
@@ -156,7 +154,7 @@ public class CatzArm
             case Robot.COMMAND_UPDATE_SCORE_MID_CONE :
                 highExtendProcess = false;
                 Robot.armControlMode = mechMode.AutoMode;
-                armMtr.set(ControlMode.Position, POS_ENC_CNTS_RETRACT);
+                io.armSetRetractPosIO();
                 armInPosition = false;
                 targetPosition = POS_ENC_CNTS_RETRACT;
             break;
@@ -181,11 +179,52 @@ public class CatzArm
 
             
         }
-        else if(armMtr.getControlMode() == ControlMode.PercentOutput)
+        else if(inputs.isArmInControlMode)
         {
             setArmPwr(MANUAL_CONTROL_PWR_OFF);
         }
+
+        if(highExtendProcess == true)
+        {
+            elevatorPosition = Robot.elevator.getElevatorEncoder();
+
+            if(DriverStation.isAutonomousEnabled() && Robot.selectedGamePiece == Robot.GP_CONE)//TBD explain why we need to wait for intake in autonomous and when we have a cone
+            {
+                if(elevatorPosition >= POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR && 
+                   Robot.intake.isIntakeInPos())
+                {
+                    io.armSetFullExtendPosIO();
+                    highExtendProcess = false;
+                }
+            }
+            else
+            {
+                if(elevatorPosition >= POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR)
+                {
+                    io.armSetFullExtendPosIO();
+                    highExtendProcess = false; 
+                }
+            }
+        }
+
+        currentPosition = inputs.armMotorEncoder;
+        positionError = currentPosition - targetPosition;
+        if  ((Math.abs(positionError) <= ARM_POS_ERROR_THRESHOLD) && targetPosition != NO_TARGET_POSITION)
+        {
+            targetPosition = NO_TARGET_POSITION;
+            numConsectSamples++;
+                if(numConsectSamples >= 10)
+                {   
+                    armInPosition = true;
+                }
+        }
+        else
+        {
+            numConsectSamples = 0;
+        }
         
+
+        Logger.getInstance().recordOutput("highextedProcess", highExtendProcess);
     }   //End of cmdProcArm()
 
 
@@ -200,51 +239,12 @@ public class CatzArm
         {
             while(true)
             {
-                if(highExtendProcess == true)
-                {
-                    elevatorPosition = Robot.elevator.getElevatorEncoder();
-
-                    if(DriverStation.isAutonomousEnabled() && Robot.selectedGamePiece == Robot.GP_CONE)//TBD explain why we need to wait for intake in autonomous and when we have a cone
-                    {
-                        if(elevatorPosition >= POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR && 
-                           Robot.intake.isIntakeInPos())
-                        {
-                            armMtr.set(ControlMode.Position, POS_ENC_CNTS_EXTEND);
-                            highExtendProcess = false;
-                        }
-                    }
-                    else
-                    {
-                        if(elevatorPosition >= POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR)
-                        {
-                            armMtr.set(ControlMode.Position, POS_ENC_CNTS_EXTEND);
-                            highExtendProcess = false; 
-                        }
-                    }
-                }
-
-                currentPosition = armMtr.getSelectedSensorPosition();
-                positionError = currentPosition - targetPosition;
-                if  ((Math.abs(positionError) <= ARM_POS_ERROR_THRESHOLD) && targetPosition != NO_TARGET_POSITION)
-                {
-                    targetPosition = NO_TARGET_POSITION;
-                    numConsectSamples++;
-                        if(numConsectSamples >= 10)
-                        {   
-                            armInPosition = true;
-                        }
-                }
-                else
-                {
-                    numConsectSamples = 0;
-                }
-                
 
                 if((DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_INTAKE)) 
                 {        
                     data = new CatzLog(Robot.currentTime.get(), targetPosition, currentPosition, 
                                                                 positionError, 
-                                                                armMtr.getMotorOutputPercent(),
+                                                                -999.0,
                                                                             -999.0, -999.0, -999.0, -999.0, -999.0,
                                                                             -999.0, -999.0, -999.0, -999.0, -999.0,
                                                                             DataCollection.boolData);
@@ -267,9 +267,9 @@ public class CatzArm
     *----------------------------------------------------------------------------------------*/
     public void checkLimitSwitches()
     {
-        if(armMtr.getSensorCollection().isRevLimitSwitchClosed() == SWITCH_CLOSED)
+        if(inputs.isRevLimitSwitchClosed)
         {
-            armMtr.setSelectedSensorPosition(POS_ENC_CNTS_RETRACT);
+            io.setSelectedSensorPositionIO(POS_ENC_CNTS_RETRACT);
             extendSwitchState = true;
         }
         else
@@ -282,17 +282,17 @@ public class CatzArm
 
     public void setArmPwr(double pwr)
     {        
-        armMtr.set(ControlMode.PercentOutput, pwr);
+        io.setArmPwrIO(pwr);
     }
 
     public double getArmEncoder()
     {
-        return armMtr.getSelectedSensorPosition();
+        return inputs.armMotorEncoder;
     }
 
     public void smartDashboardARM()
     {
-        SmartDashboard.putNumber("arm encoder position", armMtr.getSelectedSensorPosition());
+        SmartDashboard.putNumber("arm encoder position", inputs.armMotorEncoder);
     }
     public boolean isArmInPos()
     {
