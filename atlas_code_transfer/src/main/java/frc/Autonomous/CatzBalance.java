@@ -110,7 +110,7 @@ public class CatzBalance
                         }
                     
                         
-                        Robot.drivetrain.drive(0.0, -power, 0.0); 
+                        //Robot.drivetrain.drive(0.0, -power, 0.0); TBD will be added back after trajectory integration 
                         
                         prevBalanceAngle = balanceAngle;
                         prevTime = time;

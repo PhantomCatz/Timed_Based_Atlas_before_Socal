@@ -87,7 +87,6 @@ public class ElevatorIOReal implements ElevatorIO
         inputs.elevatorEncoderCnts = elevatorMtr.getSelectedSensorPosition();
         inputs.isRevLimitSwitchClosed = (elevatorMtr.getSensorCollection().isRevLimitSwitchClosed() == SWITCH_CLOSED);
         inputs.isFwdLimitSwitchClosed = (elevatorMtr.getSensorCollection().isFwdLimitSwitchClosed() == SWITCH_CLOSED);
-        inputs.elevatorClosesloopError = elevatorMtr.getClosedLoopError();
     }
 
     @Override

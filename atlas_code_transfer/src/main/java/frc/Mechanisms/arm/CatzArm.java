@@ -1,7 +1,5 @@
 package frc.Mechanisms.arm;
 
-import org.littletonrobotics.junction.Logger;
-
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
@@ -21,22 +19,12 @@ import frc.robot.Robot.mechMode;
 
 public class CatzArm
 {
+
     private final ArmIO io;
     private final ArmIOInputsAutoLogged  inputs = new ArmIOInputsAutoLogged();
 
-    private final int ARM_MC_ID = 20;
-
     private final double EXTEND_PWR  = 0.2;
     private final double RETRACT_PWR = -0.2;
-
-    //Conversion factors
-
-    //current limiting
-    private SupplyCurrentLimitConfiguration armCurrentLimit;
-    private final int     CURRENT_LIMIT_AMPS            = 55;
-    private final int     CURRENT_LIMIT_TRIGGER_AMPS    = 55;
-    private final double  CURRENT_LIMIT_TIMEOUT_SECONDS = 0.5;
-    private final boolean ENABLE_CURRENT_LIMIT          = true;
 
     //gear ratio
     private final double VERSA_RATIO  = 7.0/1.0;
@@ -109,7 +97,6 @@ public class CatzArm
                 break;
         }
 
-
     }
 
 
@@ -121,9 +108,6 @@ public class CatzArm
     public void cmdProcArm(boolean armExtend, boolean armRetract,
                             int cmdUpdateState)
     {
-        io.updateInputs(inputs);
-        Logger.getInstance().processInputs("Arm", inputs);
-    
         checkLimitSwitches();
         
         switch(cmdUpdateState)
@@ -138,6 +122,8 @@ public class CatzArm
                 io.armSetPickupPosIO();
                 armInPosition = false;
                 targetPosition = POS_ENC_CNTS_PICKUP;
+
+                
             break;
 
             case Robot.COMMAND_UPDATE_SCORE_HIGH_CONE:
@@ -179,7 +165,7 @@ public class CatzArm
 
             
         }
-        else if(inputs.isArmInControlMode)
+        else if(inputs.isArmControlModePercentOutput)
         {
             setArmPwr(MANUAL_CONTROL_PWR_OFF);
         }
@@ -207,6 +193,7 @@ public class CatzArm
             }
         }
 
+
         currentPosition = inputs.armMotorEncoder;
         positionError = currentPosition - targetPosition;
         if  ((Math.abs(positionError) <= ARM_POS_ERROR_THRESHOLD) && targetPosition != NO_TARGET_POSITION)
@@ -224,7 +211,20 @@ public class CatzArm
         }
         
 
-        Logger.getInstance().recordOutput("highextedProcess", highExtendProcess);
+        if((DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_INTAKE)) 
+        {        
+            data = new CatzLog(Robot.currentTime.get(), targetPosition, currentPosition, 
+                                                        positionError,
+                                                        -999.0, 
+                                                        //armMtr.getMotorOutputPercent(),
+                                                                    -999.0, -999.0, -999.0, -999.0, -999.0,
+                                                                    -999.0, -999.0, -999.0, -999.0, -999.0,
+                                                                    DataCollection.boolData);
+                                    
+            Robot.dataCollection.logData.add(data);
+        }
+
+        
     }   //End of cmdProcArm()
 
 
@@ -239,18 +239,6 @@ public class CatzArm
         {
             while(true)
             {
-
-                if((DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_INTAKE)) 
-                {        
-                    data = new CatzLog(Robot.currentTime.get(), targetPosition, currentPosition, 
-                                                                positionError, 
-                                                                -999.0,
-                                                                            -999.0, -999.0, -999.0, -999.0, -999.0,
-                                                                            -999.0, -999.0, -999.0, -999.0, -999.0,
-                                                                            DataCollection.boolData);
-                                            
-                    Robot.dataCollection.logData.add(data);
-                }
 
                 Timer.delay(0.02);
             }   //End of while(true)
@@ -292,7 +280,7 @@ public class CatzArm
 
     public void smartDashboardARM()
     {
-        SmartDashboard.putNumber("arm encoder position", inputs.armMotorEncoder);
+        //SmartDashboard.putNumber("arm encoder position", armMtr.getSelectedSensorPosition());
     }
     public boolean isArmInPos()
     {

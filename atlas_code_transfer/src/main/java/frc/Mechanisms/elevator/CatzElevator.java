@@ -26,6 +26,8 @@ public class CatzElevator
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged  inputs = new ElevatorIOInputsAutoLogged();
 
+    private final int ELEVATOR_MC_ID = 10;
+
     private final double MAX_MANUAL_SCALED_POWER = 0.7;
 
     private final double MANUAL_CONTROL_DEADBAND = 0.1;
@@ -149,7 +151,6 @@ public class CatzElevator
                 io = new ElevatorIOReal() {};
                 break;
         }
-
     }
 
 
@@ -160,6 +161,7 @@ public class CatzElevator
     *----------------------------------------------------------------------------------------*/
     public void cmdProcElevator(double elevatorPwr, boolean manualMode, int cmdUpdateState)
     {
+        checkLimitSwitches();
         
        elevatorPwr = -elevatorPwr; //reverses elevator pwr
 
@@ -207,7 +209,6 @@ public class CatzElevator
             break;
         }
 
-                
         if(armRetractingAndElevatorDescent)
         {
             if (Robot.arm.getArmEncoder() <= ARM_ENCODER_THRESHOLD)
@@ -253,6 +254,7 @@ public class CatzElevator
                 elevatorManual(0.0);
             }
         }
+
         
         currentPosition = inputs.elevatorEncoderCnts;
         positionError = currentPosition - targetPosition;
@@ -272,10 +274,9 @@ public class CatzElevator
         }
 
 
-
        if((DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_ELEVATOR))
         {
-          data = new CatzLog(elevatorTime.get(), inputs.elevatorEncoderCnts, -999.0, 
+          data = new CatzLog(elevatorTime.get(), -999.0,-999.0,//elevatorMtr.getSelectedSensorPosition(), elevatorMtr.getMotorOutputPercent(), 
                                                                   -999.0, 
                                                                   -999.0, 
                                                                   -999.0, 
@@ -299,7 +300,6 @@ public class CatzElevator
         {
             while(true)
             {
-
                 Timer.delay(0.020); 
             }   //End of while(true)
         });
@@ -317,7 +317,8 @@ public class CatzElevator
         double mtrPower;
 
         mtrPower = pwr * MAX_MANUAL_SCALED_POWER;
-        io.elevatorManualIO(mtrPower);
+
+        io.elevatorMtrSetPosIO(mtrPower);
     }
 
     public void elevatorSetToLowPos()
@@ -329,8 +330,6 @@ public class CatzElevator
         io.elevatorConfig_kIIO(0, CatzConstants.ElevatorConstants.ELEVATOR_KI_LOW);
         io.elevatorConfig_kDIO(0, CatzConstants.ElevatorConstants.ELEVATOR_KD_LOW);
         io.elevatorMtrSetPosIO(CatzConstants.ElevatorConstants.ELEVATOR_POS_ENC_CNTS_LOW);
-        targetPosition = POS_ENC_CNTS_LOW;
-        elevatorInPosition = false;
     }
 
     public void elevatorSetToMidPosCone()
@@ -342,8 +341,6 @@ public class CatzElevator
         io.elevatorConfig_kIIO(0, CatzConstants.ElevatorConstants.ELEVATOR_KI_MID);
         io.elevatorConfig_kDIO(0, CatzConstants.ElevatorConstants.ELEVATOR_KD_MID);
         io.elevatorMtrSetPosIO(CatzConstants.ElevatorConstants.ELEVATOR_POS_ENC_CNTS_MID_CONE);
-        targetPosition = POS_ENC_CNTS_MID_CONE;
-        elevatorInPosition = false;
     }
 
     public void elevatorSetToMidPosCube()
@@ -355,8 +352,6 @@ public class CatzElevator
         io.elevatorConfig_kIIO(0, CatzConstants.ElevatorConstants.ELEVATOR_KI_MID);
         io.elevatorConfig_kDIO(0, CatzConstants.ElevatorConstants.ELEVATOR_KD_MID);
         io.elevatorMtrSetPosIO(CatzConstants.ElevatorConstants.ELEVATOR_POS_ENC_CNTS_MID_CUBE);
-        targetPosition = POS_ENC_CNTS_MID_CUBE;
-        elevatorInPosition = false;
     }
 
     public void elevatorSetToHighPos()
@@ -368,8 +363,6 @@ public class CatzElevator
         io.elevatorConfig_kIIO(0, CatzConstants.ElevatorConstants.ELEVATOR_KI_HIGH);
         io.elevatorConfig_kDIO(0, CatzConstants.ElevatorConstants.ELEVATOR_KD_HIGH);
         io.elevatorMtrSetPosIO(CatzConstants.ElevatorConstants.ELEVATOR_POS_ENC_CNTS_HIGH);
-        targetPosition = POS_ENC_CNTS_HIGH;
-        elevatorInPosition = false;
     }
 
     public void elevatorSetToSinglePickup()
@@ -397,7 +390,7 @@ public class CatzElevator
             lowSwitchState = false;
         }
 
-        if(inputs.isFwdLimitSwitchClosed)
+        if(inputs.isRevLimitSwitchClosed)
         {
             io.setSelectedSensorPositionIO(POS_ENC_CNTS_HIGH);
             highSwitchState = true;
@@ -423,8 +416,8 @@ public class CatzElevator
 
     public void smartDashboardElevator_DEBUG()
     {
-        SmartDashboard.putNumber("Elevator Enc Pos", inputs.elevatorEncoderCnts);
-        SmartDashboard.putNumber("Elev Closed Loop Error", inputs.elevatorClosesloopError);
+        //SmartDashboard.putNumber("Elevator Enc Pos", elevatorMtr.getSelectedSensorPosition());
+        //SmartDashboard.putNumber("Elev Closed Loop Error", elevatorMtr.getClosedLoopError());
     }
 
     public boolean isElevatorInPos()

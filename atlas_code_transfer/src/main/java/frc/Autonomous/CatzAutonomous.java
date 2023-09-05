@@ -105,7 +105,7 @@ public class CatzAutonomous
 
         boolean done = false;
 
-        Robot.drivetrain.LT_FRNT_MODULE.resetDrvDistance();
+        //Robot.drivetrain.LT_FRNT_MODULE.resetDrvDistance();
         deltaPositionCnts = 0.0;
 
         startingAngle         = Robot.navX.getAngle();
@@ -122,7 +122,7 @@ public class CatzAutonomous
             if(time > maxTime)
             {
                 done = true;
-                Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
+                //Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle()); TBD
             }
             else
             {
@@ -139,7 +139,7 @@ public class CatzAutonomous
                     angleErrorRate = (angleError - prevAngleError) / (time - prevTime);
                 }
     
-                deltaPositionCnts   = Robot.drivetrain.LT_FRNT_MODULE.getDrvDistance();
+                //deltaPositionCnts   = Robot.drivetrain.LT_FRNT_MODULE.getDrvDistance();
                 distanceRemainInch    = distanceInch - (deltaPositionCnts * DRVTRAIN_ENC_COUNTS_TO_INCH);
                 distanceRemainAbsInch = Math.abs(distanceRemainInch);
                 drvPowerDirection     = Math.signum(distanceRemainInch);
@@ -147,7 +147,7 @@ public class CatzAutonomous
                 if(distanceRemainAbsInch <= DRV_S_THRESHOLD_INCH)
                 {
                     done = true;
-                    Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
+                    //Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle()); TBD
                 }
                 else
                 {
@@ -163,7 +163,7 @@ public class CatzAutonomous
                     turnPower *= Math.signum(drvPowerDirection);
                     
 
-                    Robot.drivetrain.translateTurn(directionDeg, drvPower, turnPower, Robot.drivetrain.getGyroAngle());
+                    //Robot.drivetrain.translateTurn(directionDeg, drvPower, turnPower, Robot.drivetrain.getGyroAngle());
                     prevTime       = time;
                     prevAngleError = angleError;
 
@@ -181,7 +181,8 @@ public class CatzAutonomous
                                                             angleKpPower,
                                                             angleKdPower,
                                                             turnPower,
-                                                            Robot.drivetrain.LT_FRNT_MODULE.getAngle(),
+                                                            -999.0,
+                                                            //Robot.drivetrain.LT_FRNT_MODULE.getAngle(),
                                                             0.0, 0.0, 0);  
                 Robot.dataCollection.logData.add(data);
             }
@@ -189,7 +190,7 @@ public class CatzAutonomous
             Timer.delay(DRV_S_THREAD_PERIOD);
         }
 
-        Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
+       // Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
     }
 
     public void DriveStraightOFFChargeStation(double distanceInch, double directionDeg, double maxTime)
@@ -220,7 +221,7 @@ public class CatzAutonomous
 
         boolean done = false;
 
-        Robot.drivetrain.LT_FRNT_MODULE.resetDrvDistance();
+        //Robot.drivetrain.LT_FRNT_MODULE.resetDrvDistance();
         deltaPositionCnts = 0.0;
 
         startingAngle         = Robot.navX.getAngle();
@@ -237,7 +238,7 @@ public class CatzAutonomous
             if(time > maxTime)
             {
                 done = true;
-                Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
+                //Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
             }
             else
             {
@@ -254,7 +255,7 @@ public class CatzAutonomous
                     angleErrorRate = (angleError - prevAngleError) / (time - prevTime);
                 }
     
-                deltaPositionCnts   = Robot.drivetrain.LT_FRNT_MODULE.getDrvDistance();
+                //deltaPositionCnts   = Robot.drivetrain.LT_FRNT_MODULE.getDrvDistance();
                 distanceRemainInch    = distanceInch - (deltaPositionCnts * DRVTRAIN_ENC_COUNTS_TO_INCH);
                 distanceRemainAbsInch = Math.abs(distanceRemainInch);
                 drvPowerDirection     = Math.signum(distanceRemainInch);
@@ -262,7 +263,7 @@ public class CatzAutonomous
                 if(distanceRemainAbsInch <= DRV_S_THRESHOLD_INCH)
                 {
                     done = true;
-                    Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
+                    //Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
                 }
                 else
                 {
@@ -278,7 +279,7 @@ public class CatzAutonomous
                     turnPower *= Math.signum(drvPowerDirection);
                     
 
-                    Robot.drivetrain.translateTurn(directionDeg, drvPower, turnPower, Robot.drivetrain.getGyroAngle());
+                    //Robot.drivetrain.translateTurn(directionDeg, drvPower, turnPower, Robot.drivetrain.getGyroAngle());
                     prevTime       = time;
                     prevAngleError = angleError;
 
@@ -296,7 +297,8 @@ public class CatzAutonomous
                                                             angleKpPower,
                                                             angleKdPower,
                                                             turnPower,
-                                                            Robot.drivetrain.LT_FRNT_MODULE.getAngle(),
+                                                            -999.0,
+                                                            //Robot.drivetrain.LT_FRNT_MODULE.getAngle(),
                                                             0.0, 0.0, 0);  
                 Robot.dataCollection.logData.add(data);
             }
@@ -304,7 +306,7 @@ public class CatzAutonomous
             Timer.delay(DRV_S_THREAD_PERIOD);
         }
 
-        Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
+        //Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
     }
 
     /*-----------------------------------------------------------------------------------------
@@ -340,7 +342,7 @@ public class CatzAutonomous
 
         boolean done = false;
 
-        Robot.drivetrain.LT_FRNT_MODULE.resetDrvDistance();
+        //Robot.drivetrain.LT_FRNT_MODULE.resetDrvDistance();
         deltaPositionCnts = 0.0;
 
         startingAngle         = Robot.navX.getAngle();
@@ -357,7 +359,7 @@ public class CatzAutonomous
             if(time > maxTime)
             {
                 done = true;
-                Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
+                //Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
             }
             else
             {
@@ -374,7 +376,7 @@ public class CatzAutonomous
                     angleErrorRate = (angleError - prevAngleError) / (time - prevTime);
                 }
     
-                deltaPositionCnts   = Robot.drivetrain.LT_FRNT_MODULE.getDrvDistance();
+               // deltaPositionCnts   = Robot.drivetrain.LT_FRNT_MODULE.getDrvDistance();
                 distanceRemainInch    = distanceInch - (deltaPositionCnts * DRVTRAIN_ENC_COUNTS_TO_INCH);
                 distanceRemainAbsInch = Math.abs(distanceRemainInch);
                 drvPowerDirection     = Math.signum(distanceRemainInch);
@@ -382,7 +384,7 @@ public class CatzAutonomous
                 if(distanceRemainAbsInch <= DRV_S_THRESHOLD_INCH)
                 {
                     done = true;
-                    Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
+                    //Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
                 }
                 else
                 {
@@ -398,7 +400,7 @@ public class CatzAutonomous
                     turnPower *= Math.signum(drvPowerDirection);
                     
 
-                    Robot.drivetrain.translateTurn(directionDeg, drvPower, turnPower, Robot.drivetrain.getGyroAngle());
+                    //Robot.drivetrain.translateTurn(directionDeg, drvPower, turnPower, Robot.drivetrain.getGyroAngle());
                     prevTime       = time;
                     prevAngleError = angleError;
 
@@ -416,7 +418,8 @@ public class CatzAutonomous
                                                             angleKpPower,
                                                             angleKdPower,
                                                             turnPower,
-                                                            Robot.drivetrain.LT_FRNT_MODULE.getAngle(),
+                                                            -999.0,
+                                                            //Robot.drivetrain.LT_FRNT_MODULE.getAngle(),
                                                             Robot.navX.getRoll(), 0.0, 0);  
                 Robot.dataCollection.logData.add(data);
             }
@@ -424,7 +427,7 @@ public class CatzAutonomous
             Timer.delay(DRV_S_THREAD_PERIOD);
         }
 
-        Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
+        //Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
     }
 
     /*-----------------------------------------------------------------------------------------
@@ -458,14 +461,14 @@ public class CatzAutonomous
             if (angleRemainingAbs < PID_TURN_THRESHOLD) 
             { 
                 turnInPlaceDone = true;
-                Robot.drivetrain.rotateInPlace(0.0);
+                //Robot.drivetrain.rotateInPlace(0.0);
             }
             else
             {
                 if (currentTime > timeoutSeconds) 
                 {
                     turnInPlaceDone = true;
-                    Robot.drivetrain.rotateInPlace(0.0);
+                    //Robot.drivetrain.rotateInPlace(0.0);
                 } 
                 else
                 {
@@ -488,7 +491,7 @@ public class CatzAutonomous
                         turnPower = Math.signum(turnPower) * TURN_DRIVE_MIN_POWER;
                     }
                     
-                    Robot.drivetrain.rotateInPlace(turnPower);
+                    //Robot.drivetrain.rotateInPlace(turnPower);
                 }
             }
 

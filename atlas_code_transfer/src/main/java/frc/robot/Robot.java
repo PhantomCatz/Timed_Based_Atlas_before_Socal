@@ -16,15 +16,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.PowerDistribution;
 
 import frc.DataLogger.CatzLog;
 import frc.DataLogger.DataCollection;
-
-import frc.Mechanisms.CatzDrivetrain;
 import frc.Mechanisms.CatzRGB;
 import frc.Mechanisms.ColorMethod;
 import frc.Mechanisms.arm.CatzArm;
+import frc.Mechanisms.CatzDrivetrain;
 import frc.Mechanisms.elevator.CatzElevator;
 import frc.Mechanisms.intake.CatzIntake;
 import frc.Autonomous.*;
@@ -47,6 +47,20 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
  */
 public class Robot extends LoggedRobot 
 {
+  //---------------------------------------------------------------------------------------------
+  //  Autonomous trajectory
+  //---------------------------------------------------------------------------------------------
+  private final SendableChooser<String> autoChooser = new SendableChooser<>();
+  private final SendableChooser<String> sideChooser = new SendableChooser<>();
+
+  public static final CatzDrivetrain drivetrain = CatzDrivetrain.getInstance();
+  private final CatzRobotTracker robotTracker = CatzRobotTracker.getInstance();
+
+  public static final AutonActionExecutor autonExecutor = AutonActionExecutor.getInstance();
+  private final AutonRoutineSelector autonRoutineSelector = AutonRoutineSelector.getInstance();
+
+  private static final Timer autonTimer = new Timer();
+
   //---------------------------------------------------------------------------------------------
   //  Shared Libraries & Utilities
   //---------------------------------------------------------------------------------------------
@@ -132,7 +146,7 @@ public class Robot extends LoggedRobot
   //---------------------------------------------------------------------------------------------
   //  Mechanisms
   //---------------------------------------------------------------------------------------------
-  public static CatzDrivetrain drivetrain;
+  //public static CatzDrivetrain drivetrain;
   public static CatzElevator   elevator;
   public static CatzArm        arm;
   public static CatzIntake     intake;
@@ -245,7 +259,7 @@ public class Robot extends LoggedRobot
     // Start AdvantageKit logger
     logger.start();
 
-    
+
     //-----------------------------------------------------------------------------------------
     //  Shared Libraries & Utilities
     //-----------------------------------------------------------------------------------------
@@ -277,7 +291,7 @@ public class Robot extends LoggedRobot
     //----------------------------------------------------------------------------------------------
     //  Mechanisms
     //----------------------------------------------------------------------------------------------
-    drivetrain = new CatzDrivetrain();
+    //drivetrain = new CatzDrivetrain();
     elevator   = new CatzElevator();
     arm        = new CatzArm();
     intake     = new CatzIntake();
@@ -298,8 +312,6 @@ public class Robot extends LoggedRobot
     //----------------------------------------------------------------------------------------------
     //  Update status, LED's
     //----------------------------------------------------------------------------------------------
-    elevator.checkLimitSwitches();
-    arm.checkLimitSwitches();
     dataCollection.updateLogDataID(); 
     led.LEDPeriodic();
 
@@ -311,7 +323,7 @@ public class Robot extends LoggedRobot
     SmartDashboard.putNumber("COMMAND STATE", commandedStateUpdate);
 
 
-    drivetrain.smartDashboardDriveTrain();
+    //drivetrain.smartDashboardDriveTrain();
     //drivetrain.smartDashboardDriveTrain_DEBUG();
     elevator.smartDashboardElevator();
     elevator.smartDashboardElevator_DEBUG();
@@ -346,7 +358,11 @@ public class Robot extends LoggedRobot
   @Override
   public void autonomousInit() 
   {
-    drivetrain.setBrakeMode();
+    robotTracker.resetPosition(new Pose2d());
+    autonRoutineSelector.updateSelectedRoutine();
+    autonExecutor.start();    
+    
+    //drivetrain.setBrakeMode();
     currentTime.reset();
     currentTime.start();
 
@@ -358,7 +374,7 @@ public class Robot extends LoggedRobot
     
     Timer.delay(OFFSET_DELAY);  //TBD - This should be 
 
-    paths.executeSelectedPath();
+    //paths.executeSelectedPath(); TBD new autonomous
   }
 
   /** This function is called periodically during autonomous. */
@@ -396,7 +412,8 @@ public class Robot extends LoggedRobot
   @Override
   public void teleopPeriodic()
   {
-    drivetrain.cmdProcSwerve(xboxDrv.getLeftX(), xboxDrv.getLeftY(), xboxDrv.getRightX(), navX.getAngle(), xboxDrv.getRightTriggerAxis());
+      drivetrain.cmdProcSwerve(xboxDrv.getLeftX(), xboxDrv.getLeftY(), xboxDrv.getRightX(), xboxDrv.getRightTriggerAxis());
+   // drivetrain.cmdProcSwerve(xboxDrv.getLeftX(), xboxDrv.getLeftY(), xboxDrv.getRightX(), navX.getAngle(), xboxDrv.getRightTriggerAxis()); TBD
 
     if(xboxDrv.getStartButtonPressed())
     {
@@ -452,7 +469,7 @@ public class Robot extends LoggedRobot
     // Lock Wheels (Balancing)
     if(xboxDrv.getBButton())
     {
-      drivetrain.lockWheels();
+      //drivetrain.lockWheels(); TBD
     }
 
     /*
@@ -480,6 +497,11 @@ public class Robot extends LoggedRobot
   @Override
   public void disabledInit()
   {
+    autonTimer.stop();
+    autonExecutor.stop();
+    AutonActionExecutor.resetInstance();
+
+    
     System.out.println( "intake temp " + intake.intakeWristTemp());
  
     currentGameModeLED = gameModeLED.MatchEnd;

@@ -197,8 +197,8 @@ public class CatzRGB
         led.setData(ledBuffer);
     }
 
-    public Color enumToAllianceColor(Enum bool){
-        if(bool == CatzConstants.AllianceColor.BlUE_ALLIANCE){
+    public Color enumToAllianceColor(Enum color){
+        if(color == CatzConstants.AllianceColor.BlUE_ALLIANCE){
             return Color.kBlue;
         }
         else{

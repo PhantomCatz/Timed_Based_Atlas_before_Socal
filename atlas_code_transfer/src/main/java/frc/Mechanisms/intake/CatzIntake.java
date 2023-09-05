@@ -1,7 +1,5 @@
 package frc.Mechanisms.intake;
 
-import org.littletonrobotics.junction.Logger;
-
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
@@ -22,20 +20,19 @@ public class CatzIntake
 {
     private final IntakeIO io;
     private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
-
+    
     private final double ROLLERS_PWR_CUBE_IN = -0.8;   
     private final double ROLLERS_PWR_CONE_IN =  1.0; //TBD decide pwrs for all cube cone scoring rollers
 
     private final double ROLLERS_PWR_CUBE_OUT =  1.0;   
     private final double ROLLERS_PWR_CONE_OUT = -0.5;
 
+    private final double WRIST_MAX_PWR = 0.3;
 
     //----------------------------------------------------------------------------------------------
     //  Wrist encoder & Position Values
     //----------------------------------------------------------------------------------------------
     private final int    WRIST_ENC_CAN_ID = 13; 
-
-    private final double WRIST_MAX_PWR = 0.3;
 
 
     private final double ENC_TO_INTAKE_GEAR_RATIO =  46.0/18.0;
@@ -136,7 +133,7 @@ public class CatzIntake
                 io = new IntakeIOReal() {};
                 break;
         }
-        
+    
         pid = new PIDController(GROSS_kP, GROSS_kI, GROSS_kD);
        
     }
@@ -154,22 +151,6 @@ public class CatzIntake
         {
             while(true)
             {
-                
-
-
-                if((DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_INTAKE)) 
-                {        
-                    data = new CatzLog(Robot.currentTime.get(), targetPositionDeg, currentPosition, 
-                                                                targetPower, 
-                                                                pidPower,
-                                                                ffPower,
-                                                                inputs.wristTargetPwr,
-                                                                            -999.0, -999.0, -999.0, 
-                                                                            -999.0, -999.0, -999.0, -999.0, -999.0,
-                                                                            DataCollection.boolData);
-                                            
-                    Robot.dataCollection.logData.add(data);
-                }
 
 
                 Timer.delay(THREAD_PERIOD);    
@@ -189,10 +170,6 @@ public class CatzIntake
                                                                                       int CmdStateUpdate, 
                                                                                       int gamePiece)
     {
-        io.updateInputs(inputs);
-        Logger.getInstance().processInputs("Intake", inputs);
-
-
         if(manualMode){                
             pidEnable = false;
             Robot.intakeControlMode = mechMode.ManualMode;
@@ -216,8 +193,8 @@ public class CatzIntake
             }
             else //in full manual mode
             {
-                targetPower = wristPwr * WRIST_MAX_PWR;  
-                io.wristSetPercentOuputIO(targetPower);  
+                targetPower = wristPwr * WRIST_MAX_PWR;    
+                io.wristSetPercentOuputIO(targetPower);
             }
         }
         else //Manual power is OFF
@@ -318,6 +295,7 @@ public class CatzIntake
             io.intakeConfigureSoftLimitOverride(true);
         }
 
+
         if(pidEnable)   
         {
             //----------------------------------------------------------------------------------
@@ -378,11 +356,31 @@ public class CatzIntake
             {
                 targetPower = 0.0;
             }
+
             io.wristSetPercentOuputIO(targetPower);
 
             prevCurrentPosition = currentPosition;
             prevTargetPwr = targetPower;
+           
         }
+
+
+        if((DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_INTAKE)) 
+        {        
+            data = new CatzLog(Robot.currentTime.get(), targetPositionDeg, currentPosition, 
+                                                        targetPower, 
+                                                        pidPower,
+                                                        ffPower,
+                                                        -999.0,
+                                                        //wristMtr.getMotorOutputPercent(),
+                                                                    -999.0, -999.0, -999.0, 
+                                                                    -999.0, -999.0, -999.0, -999.0, -999.0,
+                                                                    DataCollection.boolData);
+                                    
+            Robot.dataCollection.logData.add(data);
+        }
+
+
     }
 
 
@@ -418,7 +416,7 @@ public class CatzIntake
 
     public void rollersInCube()
     {
-        io.rollersOnIO(ROLLERS_PWR_CONE_IN);
+        io.rollersOnIO(ROLLERS_PWR_CUBE_IN);
     }
 
     public void rollersOutCube()
@@ -475,9 +473,9 @@ public class CatzIntake
         SmartDashboard.putNumber ("wrist ang",  calcWristAngle());
         SmartDashboard.putNumber ("GravityFF",       calculateGravityFF());
         SmartDashboard.putNumber ("IntakeClosedLoopError", pid.getPositionError());
-        SmartDashboard.putNumber ("applied output",  inputs.wristTargetPwr);
+        //SmartDashboard.putNumber ("applied output",  wristMtr.getMotorOutputPercent() );
         SmartDashboard.putBoolean("pid",             pidEnable);
-        SmartDashboard.putNumber ("mtr abs", inputs.wristPosEnc);
+       // SmartDashboard.putNumber ("mtr abs", wristMtr.getSelectedSensorPosition());
     }
 
     public boolean isIntakeInPos()

@@ -11,7 +11,7 @@ public interface ArmIO
     {
         public double armMotorEncoder;
         public boolean isRevLimitSwitchClosed;
-        public boolean isArmInControlMode;
+        public boolean isArmControlModePercentOutput;
     }
 
     public default void updateInputs(ArmIOInputs inputs) {}
