@@ -4,6 +4,8 @@ import frc.robot.CatzConstants;
 import frc.robot.Robot;
 import frc.robot.Robot.mechMode;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
@@ -161,8 +163,11 @@ public class CatzElevator
     *----------------------------------------------------------------------------------------*/
     public void cmdProcElevator(double elevatorPwr, boolean manualMode, int cmdUpdateState)
     {
-        checkLimitSwitches();
+        io.updateInputs(inputs);
+        Logger.getInstance().processInputs("elevator", inputs);
         
+        checkLimitSwitches();
+
        elevatorPwr = -elevatorPwr; //reverses elevator pwr
 
         switch (cmdUpdateState)
@@ -272,6 +277,7 @@ public class CatzElevator
         {
             numConsectSamples = 0;
         }
+        Logger.getInstance().recordOutput("targetEncManual", targetPositionEnc);
 
 
        if((DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_ELEVATOR))

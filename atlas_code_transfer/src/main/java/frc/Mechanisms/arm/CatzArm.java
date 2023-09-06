@@ -1,5 +1,7 @@
 package frc.Mechanisms.arm;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
@@ -108,8 +110,11 @@ public class CatzArm
     public void cmdProcArm(boolean armExtend, boolean armRetract,
                             int cmdUpdateState)
     {
-        checkLimitSwitches();
+        io.updateInputs(inputs);
+        Logger.getInstance().processInputs("arm", inputs);
         
+        checkLimitSwitches();
+
         switch(cmdUpdateState)
         {
             case Robot.COMMAND_UPDATE_PICKUP_GROUND_CONE :    

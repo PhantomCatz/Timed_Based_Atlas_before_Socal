@@ -7,41 +7,33 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.Utils.Conversions;
+import frc.robot.CatzConstants;
 
-
-public class CatzSwerveModule
-{
+public class CatzSwerveModule {
     private final CANSparkMax STEER_MOTOR;
     private final WPI_TalonFX DRIVE_MOTOR;
 
-    private final int MOTOR_ID;
+    private final PIDController steeringPID;
+    private final double kP = 0.005;
+    private final double kI = 0.0;
+    private final double kD = 0.0;
+
+    //private final int motorID; // uncomment when shuffleboard is added back
 
     private DutyCycleEncoder magEnc;
     private DigitalInput MagEncPWMInput;
 
-    private PIDController pid;
-    private final double kP = 0.01;
-    private final double kI = 0.0;
-    private final double kD = 0.0;
+    private double wheelOffset;
 
-    private double currentAngle = 0.0;
-    private double angleError = 0.0;
-    private double flippedAngleError = 0.0;
-
-    private double command;
-    public boolean driveDirectionFlipped = false;
-
-    private final double WHEEL_OFFSET;
-
-    public static final SendableChooser<Boolean> chosenState = new SendableChooser<>();
-
-    //current limiting
     private SupplyCurrentLimitConfiguration swerveModuleCurrentLimit;
     private final int     CURRENT_LIMIT_AMPS            = 55;
     private final int     CURRENT_LIMIT_TRIGGER_AMPS    = 55;
@@ -50,15 +42,11 @@ public class CatzSwerveModule
 
     private final int     STEER_CURRENT_LIMIT_AMPS      = 30;
 
-    public CatzSwerveModule(int driveMotorID, int steerMotorID, int encoderDIOChannel, double offset)
+    public CatzSwerveModule(int driveMotorID, int steerMotorID, int encoderDIOChannel, double wheelOffset)
     {
         STEER_MOTOR = new CANSparkMax(steerMotorID, MotorType.kBrushless);
         DRIVE_MOTOR = new WPI_TalonFX(driveMotorID);
 
-        STEER_MOTOR.restoreFactoryDefaults();
-        DRIVE_MOTOR.configFactoryDefault();
-
-        //Set current limit
         swerveModuleCurrentLimit = new SupplyCurrentLimitConfiguration(ENABLE_CURRENT_LIMIT, CURRENT_LIMIT_AMPS, CURRENT_LIMIT_TRIGGER_AMPS, CURRENT_LIMIT_TIMEOUT_SECONDS);
 
         STEER_MOTOR.setSmartCurrentLimit(STEER_CURRENT_LIMIT_AMPS);
@@ -66,17 +54,42 @@ public class CatzSwerveModule
 
         STEER_MOTOR.setIdleMode(IdleMode.kCoast);
         DRIVE_MOTOR.setNeutralMode(NeutralMode.Brake);
+
+        DRIVE_MOTOR.config_kP(0, 0.1);
+        DRIVE_MOTOR.config_kI(0, 0);
+        DRIVE_MOTOR.config_kD(0, 0);
+
+        steeringPID = new PIDController(kP, kI, kD);
         
         MagEncPWMInput = new DigitalInput(encoderDIOChannel);
         magEnc = new DutyCycleEncoder(MagEncPWMInput);
 
-        pid = new PIDController(kP, kI, kD);
+        this.wheelOffset = wheelOffset;
+        //this.motorID = steerMotorID; //for smartdashboard
+    }
 
-        WHEEL_OFFSET = offset;
+    public void setDesiredState(SwerveModuleState desiredState) //basically a function made solely for the purpose of following a trajectory. could be used for teleop though.
+    {
+        desiredState = SwerveModuleState.optimize(desiredState, getCurrentRotation()); //optimizes wheel rotation so that the furthest a wheel will ever rotate is 90 degrees.
 
-        //for shuffleboard
-        MOTOR_ID = steerMotorID;
-        
+        double velocity = Conversions.MPSToFalcon(desiredState.speedMetersPerSecond, CatzConstants.DriveConstants.DRVTRAIN_WHEEL_CIRCUMFERENCE, CatzConstants.DriveConstants.SDS_L2_GEAR_RATIO);
+        DRIVE_MOTOR.set(ControlMode.Velocity, velocity);
+
+        double targetAngle = (Math.abs(desiredState.speedMetersPerSecond) <= (CatzConstants.DriveConstants.MAX_SPEED * 0.01)) ? getCurrentRotation().getDegrees() : desiredState.angle.getDegrees(); //Prevent rotating module if speed is less then 1%. Prevents Jittering.
+
+        double steerCommand = - steeringPID.calculate(getCurrentRotation().getDegrees(), targetAngle);
+        steerCommand = Math.max(-1.0, Math.min(1.0, steerCommand));
+        STEER_MOTOR.set(steerCommand);
+    }
+
+    public void setPower(double power)
+    {
+        DRIVE_MOTOR.set(ControlMode.PercentOutput, power);
+    }
+
+    public void setSteeringPower(double speed)
+    {
+        STEER_MOTOR.set(speed);
     }
 
     public void resetMagEnc()
@@ -84,150 +97,35 @@ public class CatzSwerveModule
         magEnc.reset();
     }
 
-    public void setBrakeMode()
+    public void resetDriveEncs()
     {
-        STEER_MOTOR.setIdleMode(IdleMode.kBrake);
-
-    }
-    public void setCoastMode()
-    {
-        STEER_MOTOR.setIdleMode(IdleMode.kCoast);
+        DRIVE_MOTOR.setSelectedSensorPosition(0);
     }
 
-    public double closestAngle(double startAngle, double targetAngle)
+    public void initializeOffset()
     {
-        // get direction
-        double error = targetAngle % 360.0 - startAngle % 360.0;
-
-        // convert from -360 to 360 to -180 to 180
-        if (Math.abs(error) > 180.0)
-        {
-            error = -(Math.signum(error) * 360.0) + error;
-            //closest angle shouldn't be more than 180 degrees. If it is, use other direction
-            if(error > 180.0)
-            {
-                error -= 360;
-            }
-        }
-
-        return error;
+        wheelOffset = magEnc.get();
     }
 
-    public void setWheelAngle(double target, double gyroAngle)
+    private Rotation2d getCurrentRotation()
     {
-        currentAngle = ((magEnc.get() - WHEEL_OFFSET) * 360.0) - gyroAngle;
-        // find closest angle to target angle
-        angleError = closestAngle(currentAngle, target);
-
-        // find closest angle to target angle + 180
-        flippedAngleError = closestAngle(currentAngle, target + 180.0);
-
-        // if the closest angle to target is shorter
-        if (Math.abs(angleError) <= Math.abs(flippedAngleError))
-        {
-            driveDirectionFlipped = false;
-            command = pid.calculate(currentAngle, currentAngle + angleError);
-        }
-        // if the closest angle to target + 180 is shorter
-        else
-        {
-            driveDirectionFlipped = true;
-            command = pid.calculate(currentAngle, currentAngle + flippedAngleError);
-        }
-
-        command = -command / (180 * kP); //scale down command to a range of -1 to 1
-        STEER_MOTOR.set(command);
+        return Rotation2d.fromDegrees((magEnc.get() - wheelOffset)*360);
     }
 
-    public void setSteerPower(double pwr)
+    public SwerveModuleState getModuleState()
     {
-        STEER_MOTOR.set(pwr);
+        double velocity = Conversions.falconToMPS(DRIVE_MOTOR.getSelectedSensorVelocity(),CatzConstants.DriveConstants.DRVTRAIN_WHEEL_CIRCUMFERENCE, CatzConstants.DriveConstants.SDS_L2_GEAR_RATIO);
+        
+        return new SwerveModuleState(velocity, getCurrentRotation());
     }
 
-    public void setDrivePower(double pwr)
+    public SwerveModulePosition getModulePosition()
     {
-        if(driveDirectionFlipped == true)
-        {
-            pwr = -pwr;
-        }
-        DRIVE_MOTOR.set(ControlMode.PercentOutput, -pwr);
-    }
-    
-    public double getEncValue()
-    {
-        return magEnc.get();
+        return new SwerveModulePosition(getDriveDistanceMeters(), getCurrentRotation());
     }
 
-    public double getDrvDistanceRaw()
+    public double getDriveDistanceMeters()
     {
-        return DRIVE_MOTOR.getSelectedSensorPosition();
-    }
-
-    public double getDrvDistance()
-    {
-        if(driveDirectionFlipped)
-        {
-            return DRIVE_MOTOR.getSelectedSensorPosition();
-        }
-        else
-        {
-            return -DRIVE_MOTOR.getSelectedSensorPosition();
-        }
-    }
-
-    public void resetDrvDistance()
-    {
-        int i = 0;
-
-        DRIVE_MOTOR.setSelectedSensorPosition(0.0);
-        while(Math.abs(DRIVE_MOTOR.getSelectedSensorPosition()) > 1.0)
-        {
-            i++;
-            if(i >= 3000)
-            {
-                resetDrvDistance();
-            }
-        }
-    }
-
-    public double getDrvVelocity()
-    {
-        return DRIVE_MOTOR.getSelectedSensorVelocity();
-    }
-    
-    public double getAngle()
-    {
-        return magEnc.get();//currentAngle
-    }
-
-    public double getError()
-    {
-        return angleError;
-    }
-
-    public double getFlipError()
-    {
-        return flippedAngleError;
-    }
-
-    public void smartDashboardModules()
-    {
-        SmartDashboard.putNumber(MOTOR_ID + " Wheel Angle", (currentAngle));
-    }
-
-    public void smartDashboardModules_DEBUG()
-    {
-        SmartDashboard.putNumber(MOTOR_ID + " Mag Encoder", magEnc.get() );
-        //SmartDashboard.putBoolean(motorID + " Flipped", driveDirectionFlipped);
-    }
-
-    /*Auto Balance */
-    public void reverseDrive(Boolean reverse)
-    {
-        DRIVE_MOTOR.setInverted(reverse);
-    }
-
-    public SwerveModulePosition getModulePosition() {
-        return null;
+        return DRIVE_MOTOR.getSelectedSensorPosition() / CatzConstants.DriveConstants.SDS_L2_GEAR_RATIO * CatzConstants.DriveConstants.DRVTRAIN_WHEEL_CIRCUMFERENCE / 2048.0;
     }
 }

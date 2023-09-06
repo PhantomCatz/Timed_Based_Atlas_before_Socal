@@ -8,7 +8,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.Timer;
 import frc.Autonomous.CatzRobotTracker;
-import frc.Mechanisms.CatzDrivetrain;
+import frc.Mechanisms.drivetrain.CatzDrivetrain;
 import frc.robot.CatzConstants;
 
 // Follows a trajectory

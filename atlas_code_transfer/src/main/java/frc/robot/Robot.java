@@ -24,7 +24,7 @@ import frc.DataLogger.DataCollection;
 import frc.Mechanisms.CatzRGB;
 import frc.Mechanisms.ColorMethod;
 import frc.Mechanisms.arm.CatzArm;
-import frc.Mechanisms.CatzDrivetrain;
+import frc.Mechanisms.drivetrain.CatzDrivetrain;
 import frc.Mechanisms.elevator.CatzElevator;
 import frc.Mechanisms.intake.CatzIntake;
 import frc.Autonomous.*;

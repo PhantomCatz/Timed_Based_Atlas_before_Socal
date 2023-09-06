@@ -1,5 +1,7 @@
 package frc.Mechanisms.intake;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
@@ -170,6 +172,8 @@ public class CatzIntake
                                                                                       int CmdStateUpdate, 
                                                                                       int gamePiece)
     {
+        io.updateInputs(inputs);
+        Logger.getInstance().processInputs("intake", inputs);
         if(manualMode){                
             pidEnable = false;
             Robot.intakeControlMode = mechMode.ManualMode;
