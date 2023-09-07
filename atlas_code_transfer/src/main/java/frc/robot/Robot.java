@@ -25,6 +25,7 @@ import frc.Mechanisms.CatzRGB;
 import frc.Mechanisms.ColorMethod;
 import frc.Mechanisms.arm.CatzArm;
 import frc.Mechanisms.drivetrain.CatzDrivetrain;
+import frc.Mechanisms.drivetrain.CatzDrivetrain_OT;
 import frc.Mechanisms.elevator.CatzElevator;
 import frc.Mechanisms.intake.CatzIntake;
 import frc.Autonomous.*;
@@ -53,7 +54,7 @@ public class Robot extends LoggedRobot
   private final SendableChooser<String> autoChooser = new SendableChooser<>();
   private final SendableChooser<String> sideChooser = new SendableChooser<>();
 
-  public static final CatzDrivetrain drivetrain = CatzDrivetrain.getInstance();
+  public static final CatzDrivetrain_OT drivetrain = CatzDrivetrain_OT.getInstance();
   private final CatzRobotTracker robotTracker = CatzRobotTracker.getInstance();
 
   public static final AutonActionExecutor autonExecutor = AutonActionExecutor.getInstance();

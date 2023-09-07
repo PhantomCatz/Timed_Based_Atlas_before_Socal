@@ -12,8 +12,8 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.CatzConstants;
 
-public class CatzDrivetrain {
-    private static CatzDrivetrain instance = null;
+public class CatzDrivetrain_OT {
+    private static CatzDrivetrain_OT instance = null;
 
     private static CatzSwerveModule[] swerveModules = new CatzSwerveModule[4];
 
@@ -44,7 +44,7 @@ public class CatzDrivetrain {
 
     private AHRS navX;
 
-    private CatzDrivetrain()
+    private CatzDrivetrain_OT()
     {
         LT_FRNT_MODULE = new CatzSwerveModule(LT_FRNT_DRIVE_ID, LT_FRNT_STEER_ID, LT_FRNT_ENC_PORT, LT_FRNT_OFFSET);
         LT_BACK_MODULE = new CatzSwerveModule(LT_BACK_DRIVE_ID, LT_BACK_STEER_ID, LT_BACK_ENC_PORT, LT_BACK_OFFSET);
@@ -175,11 +175,11 @@ public class CatzDrivetrain {
     }
 
 
-    public static CatzDrivetrain getInstance()
+    public static CatzDrivetrain_OT getInstance()
     {
         if(instance == null)
         {
-            instance = new CatzDrivetrain();
+            instance = new CatzDrivetrain_OT();
         }
 
         return instance;

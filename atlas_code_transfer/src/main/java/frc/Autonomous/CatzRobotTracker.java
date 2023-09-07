@@ -24,7 +24,7 @@ public class CatzRobotTracker extends AbstractMechanism{
     {
         super(THREAD_PERIOD_MS);
         driveTrain.resetDriveEncs();
-        poseEstimator = new SwerveDrivePoseEstimator(CatzConstants.DriveConstants.swerveDriveKinematics, Rotation2d.fromDegrees(0), driveTrain.getModulePositions(), new Pose2d(0,0,Rotation2d.fromDegrees(0)));
+        poseEstimator = new SwerveDrivePoseEstimator(CatzConstants.DriveConstants.swerveDriveKinematics, Rotation2d.fromDegrees(180), driveTrain.getModulePositions(), new Pose2d(0,0,Rotation2d.fromDegrees(0)));
         super.start();
     }
 
@@ -61,7 +61,7 @@ public class CatzRobotTracker extends AbstractMechanism{
             //poseEstimator.addVisionMeasurement(limelight.getLimelightBotPose(), Timer.getFPGATimestamp());
         }
         poseEstimator.update(Rotation2d.fromDegrees(driveTrain.getGyroAngle()), driveTrain.getModulePositions());
-        System.out.println("("+poseEstimator.getEstimatedPosition().getX()+","+poseEstimator.getEstimatedPosition().getY()+")");
+        //System.out.println("("+poseEstimator.getEstimatedPosition().getX()+","+poseEstimator.getEstimatedPosition().getY()+")");
     }
 
     @Override

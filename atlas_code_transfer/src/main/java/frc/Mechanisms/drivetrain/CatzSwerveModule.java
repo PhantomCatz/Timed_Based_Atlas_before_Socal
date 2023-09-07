@@ -75,9 +75,9 @@ public class CatzSwerveModule {
         double velocity = Conversions.MPSToFalcon(desiredState.speedMetersPerSecond, CatzConstants.DriveConstants.DRVTRAIN_WHEEL_CIRCUMFERENCE, CatzConstants.DriveConstants.SDS_L2_GEAR_RATIO);
         DRIVE_MOTOR.set(ControlMode.Velocity, velocity);
 
-        double targetAngle = (Math.abs(desiredState.speedMetersPerSecond) <= (CatzConstants.DriveConstants.MAX_SPEED * 0.01)) ? getCurrentRotation().getDegrees() : desiredState.angle.getDegrees(); //Prevent rotating module if speed is less then 1%. Prevents Jittering.
+        //double targetAngle = (Math.abs(desiredState.speedMetersPerSecond) <= (CatzConstants.DriveConstants.MAX_SPEED * 0.01)) ? getCurrentRotation().getDegrees() : desiredState.angle.getDegrees(); //Prevent rotating module if speed is less then 1%. Prevents Jittering.
 
-        double steerCommand = - steeringPID.calculate(getCurrentRotation().getDegrees(), targetAngle);
+        double steerCommand = - steeringPID.calculate(getCurrentRotation().getDegrees(), desiredState.angle.getDegrees());
         steerCommand = Math.max(-1.0, Math.min(1.0, steerCommand));
         STEER_MOTOR.set(steerCommand);
     }
