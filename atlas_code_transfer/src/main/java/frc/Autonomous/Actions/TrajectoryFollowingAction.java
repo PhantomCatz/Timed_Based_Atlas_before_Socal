@@ -6,7 +6,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.Timer;
-import frc.Autonomous.CatzRobotTracker;
+import frc.Mechanisms.Odometry.CatzRobotTracker;
 import frc.Mechanisms.drivetrain.CatzDrivetrain;
 import frc.robot.CatzConstants;
 

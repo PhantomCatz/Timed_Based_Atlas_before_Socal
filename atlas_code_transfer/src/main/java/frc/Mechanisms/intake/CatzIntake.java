@@ -141,27 +141,6 @@ public class CatzIntake
     }
 
 
-
-    /*----------------------------------------------------------------------------------------------
-    *
-    *  startIntakeThread()
-    *
-    *---------------------------------------------------------------------------------------------*/
-    public void startIntakeThread()
-    {
-        Thread intakeThread = new Thread(() ->
-        {
-            while(true)
-            {
-
-
-                Timer.delay(THREAD_PERIOD);    
-            }   //End of while(true)
-        });
-        intakeThread.start();
-    }
-
-
     /*----------------------------------------------------------------------------------------------
     *
     *  cmdProcIntake()

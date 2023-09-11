@@ -1,4 +1,6 @@
-package frc.Autonomous;
+package frc.Mechanisms.Odometry;
+
+import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -62,6 +64,7 @@ public class CatzRobotTracker extends AbstractMechanism{
         }
         poseEstimator.update(Rotation2d.fromDegrees(driveTrain.getGyroAngle()), driveTrain.getModulePositions());
         //System.out.println("("+poseEstimator.getEstimatedPosition().getX()+","+poseEstimator.getEstimatedPosition().getY()+")");
+        Logger.getInstance().recordOutput("pose", poseEstimator.getEstimatedPosition());
     }
 
     @Override

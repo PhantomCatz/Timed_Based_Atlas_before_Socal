@@ -1,5 +1,7 @@
-package frc.Autonomous;
+package frc.Mechanisms.Odometry;
     
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.*;
@@ -54,7 +56,11 @@ public class CatzAprilTag {
                 {
                     botPose[i] = NetworkTableInstance.getDefault().getTable("limelight").getEntry("botpose").getDoubleArray(botPose)[i];
                 }
+                Logger.getInstance().recordOutput("botpos Px", botPose[POS_X_INDEX]);
+                Logger.getInstance().recordOutput("botpos Py", botPose[POS_Y_INDEX]);
+                Logger.getInstance().recordOutput("botpos Rz", botPose[ROT_Z_INDEX]);
             }
+            
         }
         else
         {

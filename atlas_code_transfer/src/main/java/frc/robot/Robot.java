@@ -23,6 +23,7 @@ import frc.DataLogger.CatzLog;
 import frc.DataLogger.DataCollection;
 import frc.Mechanisms.CatzRGB;
 import frc.Mechanisms.ColorMethod;
+import frc.Mechanisms.Odometry.CatzRobotTracker;
 import frc.Mechanisms.arm.CatzArm;
 import frc.Mechanisms.drivetrain.CatzDrivetrain;
 import frc.Mechanisms.drivetrain.CatzDrivetrain_OT;
@@ -99,6 +100,8 @@ public class Robot extends LoggedRobot
   public boolean xboxPickUpGroundPos = false;
   public boolean xboxPickUpSinglePos = false;
   public boolean xboxPickUpDoublePos = false;
+  public boolean autoAlignWithCubeNode = false;
+  public boolean autoAlignWithConeNode = false;
 
   public static boolean xboxNULL      = false;
 
@@ -413,7 +416,7 @@ public class Robot extends LoggedRobot
   @Override
   public void teleopPeriodic()
   {
-      drivetrain.cmdProcSwerve(xboxDrv.getLeftX(), xboxDrv.getLeftY(), xboxDrv.getRightX(), xboxDrv.getRightTriggerAxis());
+      drivetrain.cmdProcSwerve(xboxDrv.getLeftX(), xboxDrv.getLeftY(), xboxDrv.getRightX(), true);
    // drivetrain.cmdProcSwerve(xboxDrv.getLeftX(), xboxDrv.getLeftY(), xboxDrv.getRightX(), navX.getAngle(), xboxDrv.getRightTriggerAxis()); TBD
 
     if(xboxDrv.getStartButtonPressed())
@@ -430,6 +433,10 @@ public class Robot extends LoggedRobot
 
     xboxElevatorManualMode = xboxAux.getRightStickButton();
     xboxElevatorManualPwr  = xboxAux.getRightY();
+
+
+
+    
 
 
  

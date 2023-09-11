@@ -62,12 +62,18 @@ public class CatzDrivetrain_OT {
         resetMagEncs();
     }
 
-    public void cmdProcSwerve(double leftJoyX, double leftJoyY, double rightJoyX, double pwrMode)
+    public void cmdProcSwerve(double leftJoyX, double leftJoyY, double rightJoyX, boolean isAutoAlignCubeTrue)
     {
+        if(isAutoAlignCubeTrue)
+        {
+            //TBD need to work out autoaligning method
+        }
+
         if(Math.sqrt(Math.pow(leftJoyX,2) + Math.pow(leftJoyY,2)) < 0.1){
             leftJoyX = 0.0;
             leftJoyY = 0.0;
         }
+
 
         ChassisSpeeds chassisSpeeds;
         chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(leftJoyX * CatzConstants.DriveConstants.MAX_SPEED, leftJoyY * CatzConstants.DriveConstants.MAX_SPEED, rightJoyX * CatzConstants.DriveConstants.MAX_ANGSPEED, getRotation2d());
