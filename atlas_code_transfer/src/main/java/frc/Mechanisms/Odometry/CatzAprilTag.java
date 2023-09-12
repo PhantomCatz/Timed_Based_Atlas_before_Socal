@@ -56,11 +56,10 @@ public class CatzAprilTag {
                 {
                     botPose[i] = NetworkTableInstance.getDefault().getTable("limelight").getEntry("botpose").getDoubleArray(botPose)[i];
                 }
-                Logger.getInstance().recordOutput("botpos Px", botPose[POS_X_INDEX]);
-                Logger.getInstance().recordOutput("botpos Py", botPose[POS_Y_INDEX]);
-                Logger.getInstance().recordOutput("botpos Rz", botPose[ROT_Z_INDEX]);
             }
-            
+            Logger.getInstance().recordOutput("botpos Px", botPose[POS_X_INDEX]);
+            Logger.getInstance().recordOutput("botpos Py", botPose[POS_Y_INDEX]);
+            Logger.getInstance().recordOutput("botpos Rz", botPose[ROT_Z_INDEX]);
         }
         else
         {
@@ -83,6 +82,16 @@ public class CatzAprilTag {
     public double disToTag()
     {
         return (DISX_TAG_TO_TAG/2-Math.abs(botPose[POS_X_INDEX]));
+    }
+
+    public double disLateralToTargetTag()
+    {
+        return botPose[POS_Y_INDEX];
+    }
+
+    public double angleErrorFromTag()
+    {
+        return (botPose[ROT_Z_INDEX]);
     }
 
     public static CatzAprilTag getInstance()

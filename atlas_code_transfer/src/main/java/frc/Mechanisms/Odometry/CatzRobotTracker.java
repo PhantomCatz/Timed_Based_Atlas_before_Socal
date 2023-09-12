@@ -60,7 +60,7 @@ public class CatzRobotTracker extends AbstractMechanism{
     {
         if(limelight.aprilTagInView())
         {
-            //poseEstimator.addVisionMeasurement(limelight.getLimelightBotPose(), Timer.getFPGATimestamp());
+            poseEstimator.addVisionMeasurement(limelight.getLimelightBotPose(), Logger.getInstance().getRealTimestamp());
         }
         poseEstimator.update(Rotation2d.fromDegrees(driveTrain.getGyroAngle()), driveTrain.getModulePositions());
         //System.out.println("("+poseEstimator.getEstimatedPosition().getX()+","+poseEstimator.getEstimatedPosition().getY()+")");

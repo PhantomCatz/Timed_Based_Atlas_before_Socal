@@ -416,8 +416,7 @@ public class Robot extends LoggedRobot
   @Override
   public void teleopPeriodic()
   {
-      drivetrain.cmdProcSwerve(xboxDrv.getLeftX(), xboxDrv.getLeftY(), xboxDrv.getRightX(), true);
-   // drivetrain.cmdProcSwerve(xboxDrv.getLeftX(), xboxDrv.getLeftY(), xboxDrv.getRightX(), navX.getAngle(), xboxDrv.getRightTriggerAxis()); TBD
+    drivetrain.cmdProcSwerve(xboxDrv.getLeftX(), xboxDrv.getLeftY(), xboxDrv.getRightX(), (xboxDrv.getLeftTriggerAxis() > 0.5));
 
     if(xboxDrv.getStartButtonPressed())
     {

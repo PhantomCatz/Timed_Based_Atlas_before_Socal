@@ -10,7 +10,11 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import frc.Mechanisms.Odometry.CatzAprilTag;
+import frc.Mechanisms.Odometry.CatzRobotTracker;
 import frc.robot.CatzConstants;
+import frc.robot.Robot;
+import frc.robot.Robot.gameModeLED;
 
 public class CatzDrivetrain_OT {
     private static CatzDrivetrain_OT instance = null;
@@ -19,6 +23,7 @@ public class CatzDrivetrain_OT {
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
 
     private static CatzSwerveModule[] swerveModules = new CatzSwerveModule[4];
+    private static CatzAprilTag aprilTag = CatzAprilTag.getInstance();
 
     public final CatzSwerveModule LT_FRNT_MODULE;
     public final CatzSwerveModule LT_BACK_MODULE;
@@ -44,6 +49,8 @@ public class CatzDrivetrain_OT {
     private double LT_BACK_OFFSET = 0.0466;
     private double RT_BACK_OFFSET = 0.2567;
     private double RT_FRNT_OFFSET = 0.0281;
+
+    private ChassisSpeeds chassisSpeeds;
 
     private AHRS navX;
 
@@ -92,23 +99,59 @@ public class CatzDrivetrain_OT {
         gyroIO.updateInputs(gyroInputs);
         Logger.getInstance().processInputs("Drive/gyroinputs ", gyroInputs);
 
-        if(isAutoAlignCubeTrue)
-        {
-            //TBD need to work out autoaligning method
-        }
 
         if(Math.sqrt(Math.pow(leftJoyX,2) + Math.pow(leftJoyY,2)) < 0.1){
             leftJoyX = 0.0;
             leftJoyY = 0.0;
         }
+        
+        if(isAutoAlignCubeTrue)
+        {
+            double autoAlignDrvXPwr;
+            double autoAlignDrvYPwr;
+            double autoAlignTurnPwr;
+            if(aprilTag.disToTag() > 0.5){
+                autoAlignDrvXPwr = 0.2;   
+            }
+            else{
+                autoAlignDrvXPwr = 0.0;
+            }
+
+            if(aprilTag.disLateralToTargetTag() > 0.1){
+                autoAlignDrvYPwr = 0.2;
+            }
+            else{
+                autoAlignDrvYPwr = 0.0;
+            }
+            
+    
+            if(aprilTag.angleErrorFromTag() > 0.1) {
+                autoAlignTurnPwr = 0.2;
+            }
+            else
+            {
+                autoAlignTurnPwr = 0.0;
+            }
+
+            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(autoAlignDrvXPwr * CatzConstants.DriveConstants.MAX_SPEED, 
+                                                                  autoAlignDrvYPwr * CatzConstants.DriveConstants.MAX_SPEED, 
+                                                                  autoAlignTurnPwr * CatzConstants.DriveConstants.MAX_ANGSPEED, 
+                                                                  getRotation2d());
+        }
+        else //in full teleop
+        {
+            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(leftJoyX * CatzConstants.DriveConstants.MAX_SPEED, 
+                                                                  leftJoyY * CatzConstants.DriveConstants.MAX_SPEED, 
+                                                                  rightJoyX * CatzConstants.DriveConstants.MAX_ANGSPEED, 
+                                                                  getRotation2d());
+        }
 
 
-        ChassisSpeeds chassisSpeeds;
-        chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(leftJoyX * CatzConstants.DriveConstants.MAX_SPEED, leftJoyY * CatzConstants.DriveConstants.MAX_SPEED, rightJoyX * CatzConstants.DriveConstants.MAX_ANGSPEED, getRotation2d());
-
+     
         SwerveModuleState[] moduleStates = CatzConstants.DriveConstants.swerveDriveKinematics.toSwerveModuleStates(chassisSpeeds);
         
         setSwerveModuleStates(moduleStates);
+        
 
         Logger.getInstance().recordOutput("module states", moduleStates);
 
