@@ -15,12 +15,15 @@ import frc.robot.CatzConstants;
 public class CatzDrivetrain_OT {
     private static CatzDrivetrain_OT instance = null;
 
+    private final GyroIO gyroIO;
+    private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+
     private static CatzSwerveModule[] swerveModules = new CatzSwerveModule[4];
 
-    public final CatzSwerveModule RT_FRNT_MODULE;
-    public final CatzSwerveModule RT_BACK_MODULE;
     public final CatzSwerveModule LT_FRNT_MODULE;
     public final CatzSwerveModule LT_BACK_MODULE;
+    public final CatzSwerveModule RT_BACK_MODULE;
+    public final CatzSwerveModule RT_FRNT_MODULE;
 
     private final int LT_FRNT_DRIVE_ID = 1;
     private final int LT_BACK_DRIVE_ID = 3;
@@ -46,10 +49,20 @@ public class CatzDrivetrain_OT {
 
     private CatzDrivetrain_OT()
     {
-        LT_FRNT_MODULE = new CatzSwerveModule(LT_FRNT_DRIVE_ID, LT_FRNT_STEER_ID, LT_FRNT_ENC_PORT, LT_FRNT_OFFSET);
-        LT_BACK_MODULE = new CatzSwerveModule(LT_BACK_DRIVE_ID, LT_BACK_STEER_ID, LT_BACK_ENC_PORT, LT_BACK_OFFSET);
-        RT_FRNT_MODULE = new CatzSwerveModule(RT_FRNT_DRIVE_ID, RT_FRNT_STEER_ID, RT_FRNT_ENC_PORT, RT_FRNT_OFFSET);
-        RT_BACK_MODULE = new CatzSwerveModule(RT_BACK_DRIVE_ID, RT_BACK_STEER_ID, RT_BACK_ENC_PORT, RT_BACK_OFFSET);
+        switch(CatzConstants.currentMode)
+        {
+        case REAL:
+            gyroIO = new GyroIONavX();
+        break;
+        default:
+            gyroIO = null; // TBD does gryo need sim class
+        break;
+        }
+
+        LT_FRNT_MODULE = new CatzSwerveModule(LT_FRNT_DRIVE_ID, LT_FRNT_STEER_ID, LT_FRNT_ENC_PORT, LT_FRNT_OFFSET, 0);
+        LT_BACK_MODULE = new CatzSwerveModule(LT_BACK_DRIVE_ID, LT_BACK_STEER_ID, LT_BACK_ENC_PORT, LT_BACK_OFFSET, 1);
+        RT_FRNT_MODULE = new CatzSwerveModule(RT_FRNT_DRIVE_ID, RT_FRNT_STEER_ID, RT_FRNT_ENC_PORT, RT_FRNT_OFFSET, 2);
+        RT_BACK_MODULE = new CatzSwerveModule(RT_BACK_DRIVE_ID, RT_BACK_STEER_ID, RT_BACK_ENC_PORT, RT_BACK_OFFSET, 3);
 
         swerveModules[0] = LT_FRNT_MODULE;
         swerveModules[1] = LT_BACK_MODULE;
@@ -60,10 +73,25 @@ public class CatzDrivetrain_OT {
         navX.reset();
 
         resetMagEncs();
+        //Reset Mag Enc after startup
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+                zeroGyro();
+            } catch (Exception e) {
+            }
+        }).start();
     }
 
     public void cmdProcSwerve(double leftJoyX, double leftJoyY, double rightJoyX, boolean isAutoAlignCubeTrue)
     {
+        for(CatzSwerveModule module : swerveModules)
+        {
+            module.periodic();
+        }
+        gyroIO.updateInputs(gyroInputs);
+        Logger.getInstance().processInputs("Drive/gyroinputs ", gyroInputs);
+
         if(isAutoAlignCubeTrue)
         {
             //TBD need to work out autoaligning method
@@ -180,6 +208,10 @@ public class CatzDrivetrain_OT {
         }
     }
 
+    public void zeroGyro()
+    {
+      navX.setAngleAdjustment(-navX.getYaw());
+    }
 
     public static CatzDrivetrain_OT getInstance()
     {
