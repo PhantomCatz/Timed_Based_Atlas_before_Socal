@@ -33,6 +33,7 @@ public class ModuleIOReal implements ModuleIO
 
     public ModuleIOReal(int driveMotorIDIO, int steerMotorIDIO, DutyCycleEncoder magEnc)
     {
+        
         this.magEnc = magEnc;
         STEER_MOTOR = new CANSparkMax(steerMotorIDIO, MotorType.kBrushless);
         DRIVE_MOTOR = new WPI_TalonFX(driveMotorIDIO);

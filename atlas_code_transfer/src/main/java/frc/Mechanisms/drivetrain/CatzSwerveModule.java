@@ -37,6 +37,10 @@ public class CatzSwerveModule {
 
     public CatzSwerveModule(int driveMotorID, int steerMotorID, int encoderDIOChannel, double wheelOffset,  int index)
     {
+
+        MagEncPWMInput = new DigitalInput(encoderDIOChannel);
+        magEnc = new DutyCycleEncoder(MagEncPWMInput);
+        
         switch (CatzConstants.currentMode)
         {
             case REAL:
@@ -51,9 +55,7 @@ public class CatzSwerveModule {
         }
 
         steeringPID = new PIDController(kP, kI, kD);
-        
-        MagEncPWMInput = new DigitalInput(encoderDIOChannel);
-        magEnc = new DutyCycleEncoder(MagEncPWMInput);
+
 
         this.wheelOffset = wheelOffset;
         //this.motorID = steerMotorID; //for smartdashboard
@@ -93,7 +95,7 @@ public class CatzSwerveModule {
 
     public void resetMagEnc()
     {
-        magEnc.reset();
+        io.resetMagEncoderIO();
     }
 
     public void resetDriveEncs()
@@ -103,12 +105,12 @@ public class CatzSwerveModule {
 
     public void initializeOffset()
     {
-        wheelOffset = magEnc.get();
+        wheelOffset = inputs.magEncoderValue;
     }
 
     private Rotation2d getCurrentRotation()
     {
-        return Rotation2d.fromDegrees((magEnc.get() - wheelOffset)*360);
+        return Rotation2d.fromDegrees((inputs.magEncoderValue - wheelOffset)*360);
     }
 
     public SwerveModuleState getModuleState()
