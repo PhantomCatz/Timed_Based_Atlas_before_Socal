@@ -113,6 +113,9 @@ public class CatzDrivetrain_OT {
             if(aprilTag.disToTag() > 0.5){
                 autoAlignDrvXPwr = 0.2;   
             }
+            else if(aprilTag.disToTag() < 0.5){
+                autoAlignDrvXPwr = -0.2;
+            }
             else{
                 autoAlignDrvXPwr = 0.0;
             }
@@ -120,13 +123,21 @@ public class CatzDrivetrain_OT {
             if(aprilTag.disLateralToTargetTag() > 0.1){
                 autoAlignDrvYPwr = 0.2;
             }
+            else if(aprilTag.disLateralToTargetTag() < -0.1)
+            {
+                autoAlignDrvYPwr = -0.2;
+            }
             else{
                 autoAlignDrvYPwr = 0.0;
             }
+
             
-    
             if(aprilTag.angleErrorFromTag() > 0.1) {
                 autoAlignTurnPwr = 0.2;
+            }
+            else if(aprilTag.angleErrorFromTag() < -0.1)
+            {
+                autoAlignTurnPwr = -0.2;
             }
             else
             {
