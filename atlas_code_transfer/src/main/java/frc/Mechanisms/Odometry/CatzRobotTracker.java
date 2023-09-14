@@ -7,7 +7,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Timer;
 import frc.Mechanisms.AbstractMechanism;
-import frc.Mechanisms.drivetrain.CatzDrivetrain;
+import frc.Mechanisms.drivetrain.CatzDrivetrain_OT;
 import frc.robot.CatzConstants;
 
 public class CatzRobotTracker extends AbstractMechanism{
@@ -17,7 +17,7 @@ public class CatzRobotTracker extends AbstractMechanism{
 
     private static final int THREAD_PERIOD_MS = 20;
 
-    private final CatzDrivetrain driveTrain = CatzDrivetrain.getInstance();
+    private final CatzDrivetrain_OT driveTrain = CatzDrivetrain_OT.getInstance();
     private final CatzAprilTag limelight =  CatzAprilTag.getInstance();
     
     private SwerveDrivePoseEstimator poseEstimator;

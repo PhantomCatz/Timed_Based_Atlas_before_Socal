@@ -7,7 +7,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.Timer;
 import frc.Mechanisms.Odometry.CatzRobotTracker;
-import frc.Mechanisms.drivetrain.CatzDrivetrain;
+import frc.Mechanisms.drivetrain.CatzDrivetrain_OT;
 import frc.robot.CatzConstants;
 
 // Follows a trajectory
@@ -17,7 +17,7 @@ public class TrajectoryFollowingAction implements ActionBase{
     private final Timer timer = new Timer();
     private final HolonomicDriveController controller;
     private final CatzRobotTracker robotTracker = CatzRobotTracker.getInstance();
-    private final CatzDrivetrain driveTrain = CatzDrivetrain.getInstance();
+    private final CatzDrivetrain_OT driveTrain = CatzDrivetrain_OT.getInstance();
 
     private final Trajectory trajectory;
     private final Rotation2d targetHeading;
