@@ -9,7 +9,6 @@ import java.util.function.Supplier;
 
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -25,7 +24,7 @@ import frc.Mechanisms.CatzRGB;
 import frc.Mechanisms.ColorMethod;
 import frc.Mechanisms.Odometry.CatzRobotTracker;
 import frc.Mechanisms.arm.CatzArm;
-import frc.Mechanisms.drivetrain.CatzDrivetrain_OT;
+import frc.Mechanisms.drivetrain.CatzDrivetrain;
 import frc.Mechanisms.elevator.CatzElevator;
 import frc.Mechanisms.intake.CatzIntake;
 import frc.Autonomous.*;
@@ -54,7 +53,7 @@ public class Robot extends LoggedRobot
   private final SendableChooser<String> autoChooser = new SendableChooser<>();
   private final SendableChooser<String> sideChooser = new SendableChooser<>();
 
-  public static final CatzDrivetrain_OT drivetrain = CatzDrivetrain_OT.getInstance();
+  public static final CatzDrivetrain drivetrain = CatzDrivetrain.getInstance();
   private final CatzRobotTracker robotTracker = CatzRobotTracker.getInstance();
 
   public static final AutonActionExecutor autonExecutor = AutonActionExecutor.getInstance();
@@ -240,7 +239,7 @@ public class Robot extends LoggedRobot
     {
       // Running on a real robot, log to a USB stick
       case REAL:
-        logger.addDataReceiver(new WPILOGWriter("/media/sda1/"));
+        logger.addDataReceiver(new WPILOGWriter("/JavaBook2021/"));
         logger.addDataReceiver(new NT4Publisher());
        // new PowerDistribution(1, ModuleType.kRev);
         break;
@@ -326,8 +325,8 @@ public class Robot extends LoggedRobot
     SmartDashboard.putNumber("COMMAND STATE", commandedStateUpdate);
 
 
-    //drivetrain.smartDashboardDriveTrain();
-    //drivetrain.smartDashboardDriveTrain_DEBUG();
+    drivetrain.smartDashboardDriveTrain();
+    drivetrain.smartDashboardDriveTrain_DEBUG();
     elevator.smartDashboardElevator();
     elevator.smartDashboardElevator_DEBUG();
     //balance.SmartDashboardBalanceDebug();

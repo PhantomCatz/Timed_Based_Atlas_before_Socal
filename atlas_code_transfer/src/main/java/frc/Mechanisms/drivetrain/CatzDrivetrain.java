@@ -16,11 +16,11 @@ import frc.robot.CatzConstants;
 import frc.robot.Robot;
 import frc.robot.Robot.gameModeLED;
 
-public class CatzDrivetrain_OT {
-    private static CatzDrivetrain_OT instance = null;
+public class CatzDrivetrain {
+    private static CatzDrivetrain instance = null;
 
-    private final GyroIO gyroIO;
-    private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+    private GyroIO gyroIO;
+    private GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
 
     private static CatzSwerveModule[] swerveModules = new CatzSwerveModule[4];
     private static CatzAprilTag aprilTag = CatzAprilTag.getInstance();
@@ -52,9 +52,7 @@ public class CatzDrivetrain_OT {
 
     private ChassisSpeeds chassisSpeeds;
 
-    private AHRS navX;
-
-    private CatzDrivetrain_OT()
+    private CatzDrivetrain()
     {
         switch(CatzConstants.currentMode)
         {
@@ -76,8 +74,6 @@ public class CatzDrivetrain_OT {
         swerveModules[2] = RT_FRNT_MODULE;
         swerveModules[3] = RT_BACK_MODULE;
 
-        navX = new AHRS();
-        navX.reset();
 
         resetMagEncs();
         //Reset Mag Enc after startup
@@ -206,7 +202,7 @@ public class CatzDrivetrain_OT {
 
     public void initializeOffsets()
     {
-        navX.setAngleAdjustment(-navX.getYaw());
+        //GyroIO.setAngleAdjustmentIO(-gyroInputs.gyroYaw);
 
         for(CatzSwerveModule module : swerveModules)
         {
@@ -216,7 +212,7 @@ public class CatzDrivetrain_OT {
 
     public double getGyroAngle()
     {
-        return navX.getAngle();
+        return gyroInputs.gyroAngle;
     }
 
     public void stopDriving(){
@@ -264,14 +260,24 @@ public class CatzDrivetrain_OT {
 
     public void zeroGyro()
     {
-      navX.setAngleAdjustment(-navX.getYaw());
+      //GyroIO.setAngleAdjustmentIO(-gyroInputs.gyroYaw);
     }
 
-    public static CatzDrivetrain_OT getInstance()
+    public void smartDashboardDriveTrain_DEBUG()
+    {
+
+    }
+
+    public void smartDashboardDriveTrain()
+    {
+        
+    }
+
+    public static CatzDrivetrain getInstance()
     {
         if(instance == null)
         {
-            instance = new CatzDrivetrain_OT();
+            instance = new CatzDrivetrain();
         }
 
         return instance;

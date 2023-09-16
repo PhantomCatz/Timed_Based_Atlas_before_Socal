@@ -1,5 +1,7 @@
 package frc.Autonomous.Actions;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -7,7 +9,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.Timer;
 import frc.Mechanisms.Odometry.CatzRobotTracker;
-import frc.Mechanisms.drivetrain.CatzDrivetrain_OT;
+import frc.Mechanisms.drivetrain.CatzDrivetrain;
 import frc.robot.CatzConstants;
 
 // Follows a trajectory
@@ -17,7 +19,7 @@ public class TrajectoryFollowingAction implements ActionBase{
     private final Timer timer = new Timer();
     private final HolonomicDriveController controller;
     private final CatzRobotTracker robotTracker = CatzRobotTracker.getInstance();
-    private final CatzDrivetrain_OT driveTrain = CatzDrivetrain_OT.getInstance();
+    private final CatzDrivetrain driveTrain = CatzDrivetrain.getInstance();
 
     private final Trajectory trajectory;
     private final Rotation2d targetHeading;
@@ -57,9 +59,13 @@ public class TrajectoryFollowingAction implements ActionBase{
         
         ChassisSpeeds adjustedSpeed = controller.calculate(robotTracker.getEstimatedPosition(), goal, targetHeading);
         SwerveModuleState[] targetModuleStates = CatzConstants.DriveConstants.swerveDriveKinematics.toSwerveModuleStates(adjustedSpeed);
-        
-        // System.out.println("goal: " + targetModuleStates[0].angle.getDegrees());
         driveTrain.setSwerveModuleStates(targetModuleStates);
+
+        Logger.getInstance().recordOutput("Current Position", robotTracker.getEstimatedPosition());
+        Logger.getInstance().recordOutput("Target Position", goal.poseMeters);
+        Logger.getInstance().recordOutput("Adjusted VelX", adjustedSpeed.vxMetersPerSecond);
+        Logger.getInstance().recordOutput("Adjusted VelX", adjustedSpeed.vxMetersPerSecond);
+        Logger.getInstance().recordOutput("Adjusted VelW", adjustedSpeed.omegaRadiansPerSecond);
     }
 
     // stop all robot motion
