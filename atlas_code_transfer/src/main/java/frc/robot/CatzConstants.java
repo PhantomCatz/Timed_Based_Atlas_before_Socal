@@ -69,7 +69,7 @@ public final class CatzConstants {
     );
 
     public static final double MAX_SPEED = 4.0; // meters per second
-    public static final double MAX_ANGSPEED = 1.0; // radians per second
+    public static final double MAX_ANGSPEED = 3.0; // radians per second
 
     public static final double SDS_L1_GEAR_RATIO = 8.14;       //SDS mk4i L1 ratio reduction
     public static final double SDS_L2_GEAR_RATIO = 6.75;       //SDS mk4i L2 ratio reduction

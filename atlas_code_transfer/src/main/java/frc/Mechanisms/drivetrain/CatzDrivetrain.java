@@ -45,10 +45,10 @@ public class CatzDrivetrain {
     private final int RT_BACK_ENC_PORT = 7;
     private final int RT_FRNT_ENC_PORT = 8;
 
-    private double LT_FRNT_OFFSET = 0.0091; 
-    private double LT_BACK_OFFSET = 0.0466;
-    private double RT_BACK_OFFSET = 0.2567;
-    private double RT_FRNT_OFFSET = 0.0281;
+    private double LT_FRNT_OFFSET = 0.0100; 
+    private double LT_BACK_OFFSET = 0.0455;
+    private double RT_BACK_OFFSET = 0.2572;
+    private double RT_FRNT_OFFSET = 0.0284;
 
     private ChassisSpeeds chassisSpeeds;
 
@@ -158,6 +158,7 @@ public class CatzDrivetrain {
         SwerveModuleState[] moduleStates = CatzConstants.DriveConstants.swerveDriveKinematics.toSwerveModuleStates(chassisSpeeds);
         
         setSwerveModuleStates(moduleStates);
+        
         
 
         Logger.getInstance().recordOutput("module states", moduleStates);
