@@ -7,9 +7,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class CatzAprilTag {
+public class CatzVision {
 
-    private static CatzAprilTag instance = null;
+    private static CatzVision instance = null;
 
     private final double METER_TO_INCH = 39.37;
     private final int REQUIRED_ARRAY_LENGTH = 6;
@@ -27,7 +27,24 @@ public class CatzAprilTag {
 
     private int alliance;
 
-    private CatzAprilTag(int allianceColor)
+    public boolean hasValidTarget;
+    public boolean inScoringRange;
+
+    public double xErrorOffsetDeg;    //Positive value = target is to the right, Negative value = target is to the left
+    public double yErrorOffsetDeg;
+    public double targetPresent;
+
+    private final double LIMELIGHT_MOUNT_HEIGHT = 45.5;// TBD
+
+    private final double LIMELIGHT_MOUNT_ANGLE = 31.0;// TBD what are these configs
+
+    private final double HUB_TARGET_HEIGHT_TOP = 100.0;//TBD 
+
+    private double angleToTargetDeg;
+    private double angleToTargetRad;
+    private double distanceToTargetInch;
+
+    private CatzVision(int allianceColor)
     {
         alliance = allianceColor;
     }
@@ -67,6 +84,36 @@ public class CatzAprilTag {
         }
     }
 
+    //uses limelight to for determining cone node dist
+    public void coneNodeTracking()
+    {
+        targetPresent    = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tv").getDouble(0.0);
+        xErrorOffsetDeg  = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0.0);
+        yErrorOffsetDeg  = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0.0);
+
+        if (targetPresent == 1.0)
+        {
+            hasValidTarget = true;    
+        }
+        else
+        {
+            hasValidTarget  = false;
+        }
+        
+        smartDashboardReflectiveTape();
+    }
+
+
+    
+    /**********************************************************
+    * Methods for other classes to determine cone/pose enttries
+    * 
+    **********************************************************/
+    public boolean hasValidTarget()
+    {
+        return hasValidTarget;
+    }
+
     public boolean aprilTagInView()
     {
         return (NetworkTableInstance.getDefault().getTable("limelight").getEntry("tid").getInteger(-1) != -1);
@@ -94,13 +141,52 @@ public class CatzAprilTag {
         return (botPose[ROT_Z_INDEX]);
     }
 
-    public static CatzAprilTag getInstance()
+
+
+
+    /**********************************************************
+    * Methods for other classes to determine cone reflective tape dist
+    * 
+    **********************************************************/
+    //math that determines cone node dist
+    public double getDistanceToTarget()
     {
-        if(instance == null)
-        {
-            instance = new CatzAprilTag(BLUE_ALLIANCE);
-        }
-        return instance;
+        getYErrorOffset();
+
+        angleToTargetDeg = LIMELIGHT_MOUNT_ANGLE + yErrorOffsetDeg;
+        angleToTargetRad = angleToTargetDeg * (Math.PI / 180); //Convert angle from degrees to radians
+        distanceToTargetInch = (HUB_TARGET_HEIGHT_TOP - LIMELIGHT_MOUNT_HEIGHT) / Math.tan(angleToTargetRad);
+
+        return distanceToTargetInch;
+    }
+
+    //distance offset from to the right or left of the node
+    public double getXErrorOffset()
+    {
+        xErrorOffsetDeg  = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
+        return xErrorOffsetDeg - 3.28; //offset because turret aims too much to right
+    }
+
+    //distance offest from up or down of the node
+    public double getYErrorOffset()
+    {
+        yErrorOffsetDeg  = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
+        return yErrorOffsetDeg;
+    }
+
+
+
+    /****************************************
+     * 
+     * SmartDashboard methods for Apriltag and reflective tape
+     * 
+     **************************************/
+    public void smartDashboardReflectiveTape()
+    {
+        SmartDashboard.putBoolean("Has Valid Target", hasValidTarget);
+        SmartDashboard.putNumber("X Offset", xErrorOffsetDeg);
+        SmartDashboard.putNumber("Y Offset", yErrorOffsetDeg);
+        SmartDashboard.putNumber("Distance To Target", getDistanceToTarget());
     }
 
     public void smartDashboardAprilTag()
@@ -108,5 +194,14 @@ public class CatzAprilTag {
         SmartDashboard.putNumber("botpos Px", botPose[POS_X_INDEX]);
         SmartDashboard.putNumber("botpos Py", botPose[POS_Y_INDEX]);
         SmartDashboard.putNumber("botpos Rz", botPose[ROT_Z_INDEX]);
+    }
+
+    public static CatzVision getInstance()
+    {
+        if(instance == null)
+        {
+            instance = new CatzVision(BLUE_ALLIANCE);
+        }
+        return instance;
     }
 }

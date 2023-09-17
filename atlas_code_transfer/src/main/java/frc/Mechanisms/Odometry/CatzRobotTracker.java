@@ -18,7 +18,7 @@ public class CatzRobotTracker extends AbstractMechanism{
     private static final int THREAD_PERIOD_MS = 20;
 
     private final CatzDrivetrain driveTrain = CatzDrivetrain.getInstance();
-    private final CatzAprilTag limelight =  CatzAprilTag.getInstance();
+    private final CatzVision visionLimelight =  CatzVision.getInstance();
     
     private SwerveDrivePoseEstimator poseEstimator;
 
@@ -38,15 +38,6 @@ public class CatzRobotTracker extends AbstractMechanism{
     }
     //METHOD USED IN AUTONOMOUS CONTAINER
 
-    // returns itself
-    public static CatzRobotTracker getInstance()
-    {
-        if(instance == null) 
-        {
-            instance = new CatzRobotTracker();
-        }
-        return instance;
-    }
 
     // get position
     public Pose2d getEstimatedPosition()
@@ -58,13 +49,20 @@ public class CatzRobotTracker extends AbstractMechanism{
     @Override
     public void update() 
     {
-        if(limelight.aprilTagInView())
+        
+        visionLimelight.coneNodeTracking();
+
+        //apriltag system
+        if(visionLimelight.aprilTagInView())
         {
-            poseEstimator.addVisionMeasurement(limelight.getLimelightBotPose(), Logger.getInstance().getRealTimestamp());
+            poseEstimator.addVisionMeasurement(visionLimelight.getLimelightBotPose(), Logger.getInstance().getRealTimestamp());
         }
+
+        //pose updates w/ drivetrain
         poseEstimator.update(Rotation2d.fromDegrees(driveTrain.getGyroAngle()), driveTrain.getModulePositions());
-        //System.out.println("("+poseEstimator.getEstimatedPosition().getX()+","+poseEstimator.getEstimatedPosition().getY()+")");
-        Logger.getInstance().recordOutput("pose", poseEstimator.getEstimatedPosition());
+
+
+        Logger.getInstance().recordOutput("Odometry/pose", poseEstimator.getEstimatedPosition());
     }
 
     @Override
@@ -78,4 +76,14 @@ public class CatzRobotTracker extends AbstractMechanism{
         // TODO Auto-generated method stub
         
     }
+
+        // returns itself
+        public static CatzRobotTracker getInstance()
+        {
+            if(instance == null) 
+            {
+                instance = new CatzRobotTracker();
+            }
+            return instance;
+        }
 }

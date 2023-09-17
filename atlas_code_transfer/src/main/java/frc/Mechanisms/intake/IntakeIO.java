@@ -9,8 +9,7 @@ public interface IntakeIO {
     {
         public double wristPosEnc;
         public double wristTemp;
-        public double wristTargetPosition;
-        public double wristTargetPwr;
+        public double wristAppliedPwr;
     }
 
     public default void updateInputs(IntakeIOInputs inputs) {}

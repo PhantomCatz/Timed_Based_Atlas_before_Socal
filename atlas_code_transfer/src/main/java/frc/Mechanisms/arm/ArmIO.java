@@ -2,8 +2,6 @@ package frc.Mechanisms.arm;
 
 import org.littletonrobotics.junction.AutoLog;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-
 public interface ArmIO 
 {
     @AutoLog

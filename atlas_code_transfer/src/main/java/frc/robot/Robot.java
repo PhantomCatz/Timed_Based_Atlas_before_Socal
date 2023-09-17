@@ -22,6 +22,7 @@ import frc.DataLogger.CatzLog;
 import frc.DataLogger.DataCollection;
 import frc.Mechanisms.CatzRGB;
 import frc.Mechanisms.ColorMethod;
+import frc.Mechanisms.AbstractMechanism;
 import frc.Mechanisms.Odometry.CatzRobotTracker;
 import frc.Mechanisms.arm.CatzArm;
 import frc.Mechanisms.drivetrain.CatzDrivetrain;
@@ -29,8 +30,6 @@ import frc.Mechanisms.elevator.CatzElevator;
 import frc.Mechanisms.intake.CatzIntake;
 import frc.Autonomous.*;
 
-import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.Logger;
@@ -64,7 +63,6 @@ public class Robot extends LoggedRobot
   //---------------------------------------------------------------------------------------------
   //  Shared Libraries & Utilities
   //---------------------------------------------------------------------------------------------
-  public static CatzConstants       constants = new CatzConstants();
 
   public static DataCollection      dataCollection;
   public ArrayList<CatzLog>         dataArrayList;
@@ -73,8 +71,6 @@ public class Robot extends LoggedRobot
   //  Shared Robot Components (e.g. not mechanism specific, such as PDH, NavX, etc)
   //----------------------------------------------------------------------------------------------
   public static PowerDistribution PDH;
-
-  public static AHRS              navX;
 
   public static Timer             currentTime;
 
@@ -148,14 +144,14 @@ public class Robot extends LoggedRobot
   //---------------------------------------------------------------------------------------------
   //  Mechanisms
   //---------------------------------------------------------------------------------------------
-  //public static CatzDrivetrain drivetrain;
   public static CatzElevator   elevator;
   public static CatzArm        arm;
   public static CatzIntake     intake;
   public static CatzRGB        led = new CatzRGB();
 
   //---------------------------------------------------------------------------------------------
-  public enum mechMode{ //TBD should we adopt code orange and 6328 k&B brace style
+  public enum mechMode
+  {
     AutoMode(Color.kGreen),
     ManualHoldMode(Color.kCyan),
     ManualMode(Color.kRed);
@@ -276,9 +272,6 @@ public class Robot extends LoggedRobot
     //-----------------------------------------------------------------------------------------
     PDH = new PowerDistribution();
 
-    navX = new AHRS();
-    navX.reset();
-
     xboxDrv = new XboxController(XBOX_DRV_PORT);
     xboxAux = new XboxController(XBOX_AUX_PORT);
 
@@ -293,7 +286,6 @@ public class Robot extends LoggedRobot
     //----------------------------------------------------------------------------------------------
     //  Mechanisms
     //----------------------------------------------------------------------------------------------
-    //drivetrain = new CatzDrivetrain();
     elevator   = new CatzElevator();
     arm        = new CatzArm();
     intake     = new CatzIntake();
@@ -309,8 +301,17 @@ public class Robot extends LoggedRobot
    * SmartDashboard integrated updating.
    */
   @Override
-  public void robotPeriodic()
+  public void robotPeriodic() 
   {
+    //----------------------------------------------------------------------------------------------
+    //  Periodic calls that update the inputs(sensors/motor encoders) for each "main" loop iteration 
+    //----------------------------------------------------------------------------------------------
+    drivetrain.drivetrainPeriodic();
+    elevator.elevatorPerioidic();
+    arm.armPeriodic();
+    intake.intakePeriodic();
+
+
     //----------------------------------------------------------------------------------------------
     //  Update status, LED's
     //----------------------------------------------------------------------------------------------
@@ -320,15 +321,15 @@ public class Robot extends LoggedRobot
     //----------------------------------------------------------------------------------------------
     //  Shuffleboard Data Display
     //----------------------------------------------------------------------------------------------
-    SmartDashboard.putNumber("NavX", navX.getAngle());
     SmartDashboard.putNumber("gamepiece int", selectedGamePiece);
     SmartDashboard.putNumber("COMMAND STATE", commandedStateUpdate);
 
 
     drivetrain.smartDashboardDriveTrain();
-    drivetrain.smartDashboardDriveTrain_DEBUG();
     elevator.smartDashboardElevator();
     elevator.smartDashboardElevator_DEBUG();
+    elevator.checkLimitSwitches();
+    arm.checkLimitSwitches();
     //balance.SmartDashboardBalanceDebug();
 
         
@@ -369,10 +370,6 @@ public class Robot extends LoggedRobot
     currentTime.start();
 
     currentGameModeLED = gameModeLED.InAutonomous;
-
-    navX.reset();
-
-    navX.setAngleAdjustment(-navX.getYaw() + 180.0); //set navx's zero position to opposite way robot is facing
     
     Timer.delay(OFFSET_DELAY);  //TBD - This should be 
 
@@ -414,11 +411,12 @@ public class Robot extends LoggedRobot
   @Override
   public void teleopPeriodic()
   {
-    drivetrain.cmdProcSwerve(xboxDrv.getLeftX(), xboxDrv.getLeftY(), xboxDrv.getRightX(), (xboxDrv.getLeftTriggerAxis() > 0.5));
+    //DriveTrain Proc
+    drivetrain.cmdProcSwerve(xboxDrv.getLeftX(), xboxDrv.getLeftY(), xboxDrv.getRightX(), (xboxDrv.getLeftTriggerAxis() > 0.5), (xboxDrv.getRightTriggerAxis() > 0.5));
 
     if(xboxDrv.getStartButtonPressed())
     {
-      zeroGyro();
+      drivetrain.zeroGyro();
     }
 
 
@@ -433,21 +431,20 @@ public class Robot extends LoggedRobot
 
 
 
-    
-
-
- 
+    //stateMachhine Proc
     xboxGamePieceSelection(xboxAux.getPOV(),                // Left = Cone, Right = Cube
                            xboxAux.getBackButtonPressed()); // Clear Selected Game Piece
 
-    determineCommandState(xboxLowNode, xboxMidNode, 
-                                       xboxHighNode, 
-                                       xboxStowPos,
-                                       xboxPickUpGroundPos,
-                                       xboxAux.getPOV() == DPAD_DN,
-                                       false);
+    determineCommandState(xboxLowNode, 
+                          xboxMidNode, 
+                          xboxHighNode, 
+                          xboxStowPos,
+                          xboxPickUpGroundPos,
+                          xboxAux.getPOV() == DPAD_DN,
+                          false);
   
-                                                  
+                     
+    //Mechanism Procs
     elevator.cmdProcElevator(xboxElevatorManualPwr,  // Manual and Manual Hold Elevator Power
                             xboxElevatorManualMode,  // Enter Manual Mode
                             commandedStateUpdate);
@@ -650,12 +647,6 @@ public class Robot extends LoggedRobot
     }
   }   //end of determineCommandState()
 
-
-
-  public void zeroGyro()
-  {
-    navX.setAngleAdjustment(-navX.getYaw());
-  }
 
   public void xboxGamePieceSelection(double Dpad, boolean SelectButtonPressed)
   {

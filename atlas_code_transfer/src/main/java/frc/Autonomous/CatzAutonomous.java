@@ -3,11 +3,14 @@ package frc.Autonomous;
 import edu.wpi.first.wpilibj.Timer;
 import frc.DataLogger.CatzLog;
 import frc.DataLogger.DataCollection;
+import frc.Mechanisms.drivetrain.CatzDrivetrain;
 import frc.robot.*;
 
 @SuppressWarnings("unused")
 public class CatzAutonomous 
 {
+
+    private CatzDrivetrain drivetrain = CatzDrivetrain.getInstance();
     private final double SDS_L1_GEAR_RATIO = 8.14;       //SDS mk4i L1 ratio
     private final double SDS_L2_GEAR_RATIO = 6.75;       //SDS mk4i L2 ratio
 
@@ -108,7 +111,7 @@ public class CatzAutonomous
         //Robot.drivetrain.LT_FRNT_MODULE.resetDrvDistance();
         deltaPositionCnts = 0.0;
 
-        startingAngle         = Robot.navX.getAngle();
+        startingAngle         = 
         distanceRemainInch    = distanceInch;
         distanceRemainAbsInch = Math.abs(distanceRemainInch);
 
@@ -126,7 +129,7 @@ public class CatzAutonomous
             }
             else
             {
-                currentAngle = Robot.navX.getAngle();
+                currentAngle = drivetrain.getGyroAngle();
                 
                 angleError = startingAngle - currentAngle;
 
@@ -224,7 +227,7 @@ public class CatzAutonomous
         //Robot.drivetrain.LT_FRNT_MODULE.resetDrvDistance();
         deltaPositionCnts = 0.0;
 
-        startingAngle         = Robot.navX.getAngle();
+        startingAngle         = drivetrain.getGyroAngle();
         distanceRemainInch    = distanceInch;
         distanceRemainAbsInch = Math.abs(distanceRemainInch);
 
@@ -242,7 +245,7 @@ public class CatzAutonomous
             }
             else
             {
-                currentAngle = Robot.navX.getAngle();
+                currentAngle = drivetrain.getGyroAngle();
                 
                 angleError = startingAngle - currentAngle;
 
@@ -345,7 +348,7 @@ public class CatzAutonomous
         //Robot.drivetrain.LT_FRNT_MODULE.resetDrvDistance();
         deltaPositionCnts = 0.0;
 
-        startingAngle         = Robot.navX.getAngle();
+        startingAngle         = drivetrain.getGyroAngle();
         distanceRemainInch    = distanceInch;
         distanceRemainAbsInch = Math.abs(distanceRemainInch);
 
@@ -363,7 +366,7 @@ public class CatzAutonomous
             }
             else
             {
-                currentAngle = Robot.navX.getAngle();
+                currentAngle = drivetrain.getGyroAngle();
                 
                 angleError = startingAngle - currentAngle;
 
@@ -420,7 +423,8 @@ public class CatzAutonomous
                                                             turnPower,
                                                             -999.0,
                                                             //Robot.drivetrain.LT_FRNT_MODULE.getAngle(),
-                                                            Robot.navX.getRoll(), 0.0, 0);  
+                                                            //Robot.navX.getRoll()
+                                                            -999.0, 0.0, 0);  
                 Robot.dataCollection.logData.add(data);
             }
          
@@ -446,13 +450,13 @@ public class CatzAutonomous
         autonTimer.reset();
         autonTimer.start(); 
 
-        turnCurrentAngle  = Robot.navX.getAngle();
+        turnCurrentAngle  = drivetrain.getGyroAngle();
         turnTargetAngle   = degreesToTurn + turnCurrentAngle;
 
         while (turnInPlaceDone == false)
         {
             currentTime  = autonTimer.get();
-            turnCurrentAngle = Robot.navX.getAngle();
+            turnCurrentAngle = drivetrain.getGyroAngle();
     
             // calculate error
             turnCurrentError      = turnTargetAngle - turnCurrentAngle;

@@ -5,7 +5,7 @@ import org.littletonrobotics.junction.AutoLog;
 public interface GyroIO 
 {
     @AutoLog
-    public static class GyroIOInputs {
+    public class GyroIOInputs {
     public double gyroAngle;
     public double gyroYaw;
     public double gyroRoll;

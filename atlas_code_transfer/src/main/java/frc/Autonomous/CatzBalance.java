@@ -6,10 +6,13 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.DataLogger.CatzLog;
 import frc.DataLogger.DataCollection;
+import frc.Mechanisms.drivetrain.CatzDrivetrain;
 import frc.robot.Robot;
 
 public class CatzBalance
 {
+    private CatzDrivetrain drivetrain = CatzDrivetrain.getInstance();
+    
     public static Timer timer = new Timer();
     public static double prevTime = 0.0;
     public static double time = 0.0;
@@ -75,7 +78,7 @@ public class CatzBalance
                     {
                         time = timer.get();
 
-                        balanceAngle = Robot.navX.getRoll(); 
+                        balanceAngle = drivetrain.getGyroYaw(); 
 
                         if(prevTime < 0.0)
                         {

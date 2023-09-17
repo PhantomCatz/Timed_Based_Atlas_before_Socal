@@ -81,12 +81,15 @@ public class ElevatorIOReal implements ElevatorIO
 
     }
 
+    //Input methods that are called to collect inputs every iteration in the "Main loop" called in CatzElevator.elevatorPerioidc
     @Override
     public void updateInputs(ElevatorIOInputs inputs)
     {
         inputs.elevatorEncoderCnts = elevatorMtr.getSelectedSensorPosition();
         inputs.isRevLimitSwitchClosed = (elevatorMtr.getSensorCollection().isRevLimitSwitchClosed() == SWITCH_CLOSED);
         inputs.isFwdLimitSwitchClosed = (elevatorMtr.getSensorCollection().isFwdLimitSwitchClosed() == SWITCH_CLOSED);
+        inputs.elevatorMotorPercentOutput = elevatorMtr.getMotorOutputPercent();
+        inputs.elevatorCloseLoopError = elevatorMtr.getClosedLoopError();
     }
 
     @Override

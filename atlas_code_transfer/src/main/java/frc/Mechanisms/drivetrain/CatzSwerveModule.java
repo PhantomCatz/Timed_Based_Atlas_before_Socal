@@ -2,14 +2,6 @@ package frc.Mechanisms.drivetrain;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.IdleMode;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -17,6 +9,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.Utils.Conversions;
 import frc.robot.CatzConstants;
 
@@ -26,7 +19,7 @@ public class CatzSwerveModule {
 
     private final PIDController steeringPID;
     private final double kP = 0.005;
-    private final double kI = 0.0;
+    private final double kI = 0.001;
     private final double kD = 0.0;
 
     private DutyCycleEncoder magEnc;
@@ -34,6 +27,7 @@ public class CatzSwerveModule {
 
     private double wheelOffset;
     private int index;
+    private int steerMotorID;
 
     public CatzSwerveModule(int driveMotorID, int steerMotorID, int encoderDIOChannel, double wheelOffset,  int index)
     {
@@ -58,11 +52,12 @@ public class CatzSwerveModule {
 
 
         this.wheelOffset = wheelOffset;
-        //this.motorID = steerMotorID; //for smartdashboard
+        this.steerMotorID = steerMotorID; //for smartdashboard
 
         this.index = index;
     }
 
+    //Called up
     public void periodic() 
     {
         io.updateInputs(inputs);
@@ -128,5 +123,10 @@ public class CatzSwerveModule {
     public double getDriveDistanceMeters()
     {
         return inputs.driveMtrSelectedSensorPosition / CatzConstants.DriveConstants.SDS_L2_GEAR_RATIO * CatzConstants.DriveConstants.DRVTRAIN_WHEEL_CIRCUMFERENCE / 2048.0;
+    }
+
+    public void smartDashboardModules()
+    {
+        SmartDashboard.putNumber(steerMotorID + " Mag Encoder", magEnc.get() );
     }
 }

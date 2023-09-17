@@ -17,8 +17,6 @@ public class ModuleIOReal implements ModuleIO
     private final CANSparkMax STEER_MOTOR;
     private final WPI_TalonFX DRIVE_MOTOR;
 
-    //private final int motorID; // uncomment when shuffleboard is added back
-
     private DutyCycleEncoder magEnc;
     private DigitalInput MagEncPWMInput;
 

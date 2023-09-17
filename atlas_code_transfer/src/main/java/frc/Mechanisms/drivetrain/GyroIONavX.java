@@ -6,9 +6,10 @@ public class GyroIONavX implements GyroIO
 {
     private final AHRS navX;
   
-    public GyroIONavX() {
+    public GyroIONavX() 
+    {
         navX = new AHRS();
-        navX.setAngleAdjustment(-navX.getYaw());
+        navX.reset();
     }
 
     @Override
