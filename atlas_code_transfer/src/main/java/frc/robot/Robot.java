@@ -130,7 +130,8 @@ public class Robot extends LoggedRobot
   public static final int MODE_MANUAL_HOLD = 1;
   public static final int MODE_MANUAL      = 2;
     
-
+  //This is a test change to see how github handles it
+  public int testChange = 1;
   
   //---------------------------------------------------------------------------------------------
   //  Autonomous
