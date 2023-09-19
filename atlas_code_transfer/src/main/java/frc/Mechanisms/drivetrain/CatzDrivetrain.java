@@ -3,8 +3,6 @@ package frc.Mechanisms.drivetrain;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.kauailabs.navx.frc.AHRS;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -12,10 +10,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.Mechanisms.Odometry.CatzVision;
-import frc.Mechanisms.Odometry.CatzRobotTracker;
 import frc.robot.CatzConstants;
-import frc.robot.Robot;
-import frc.robot.Robot.gameModeLED;
 
 public class CatzDrivetrain {
     private static CatzDrivetrain instance = null;
@@ -89,6 +84,13 @@ public class CatzDrivetrain {
         }).start();
     }
 
+    /**********************************************************
+     * 
+     * drivetrainPeriodic collects all inputs into the code before any logic is done
+     *
+     *  Called up in robot periodic
+     * 
+     **********************************************************/  
     public void drivetrainPeriodic()
     {
         for(CatzSwerveModule module : swerveModules)

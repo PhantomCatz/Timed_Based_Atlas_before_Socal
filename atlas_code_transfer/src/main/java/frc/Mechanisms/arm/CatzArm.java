@@ -10,12 +10,14 @@ import edu.wpi.first.wpilibj.drive.RobotDriveBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.DataLogger.CatzLog;
 import frc.DataLogger.DataCollection;
+import frc.Mechanisms.elevator.CatzElevator;
+import frc.Mechanisms.intake.CatzIntake;
 import frc.robot.*;
 import frc.robot.Robot.mechMode;
 
 public class CatzArm
 {
-
+    private static CatzArm instance = null;
     private final ArmIO io;
     private final ArmIOInputsAutoLogged  inputs = new ArmIOInputsAutoLogged();
 
@@ -134,12 +136,12 @@ public class CatzArm
         //checks if elevator has cleared mid node before extending arm.
         if(highExtendProcess == true)
         {
-            elevatorPosition = Robot.elevator.getElevatorEncoder();
+            elevatorPosition = CatzElevator.getIntstance().getElevatorEncoder();
 
             if(DriverStation.isAutonomousEnabled() && Robot.selectedGamePiece == Robot.GP_CONE)//TBD explain why we need to wait for intake in autonomous and when we have a cone
             {
                 if(elevatorPosition >= CatzConstants.ArmConstants.POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR && 
-                   Robot.intake.isIntakeInPos())
+                   CatzIntake.getInstance().isIntakeInPos())
                 {
                     io.armSetFullExtendPosIO();
                     highExtendProcess = false;
@@ -235,5 +237,16 @@ public class CatzArm
     public boolean isArmInPos()
     {
         return armInPosition;
+    }
+
+    //returns itself for singleton implementation
+    public static CatzArm getInstance()
+    {
+        if(instance == null)
+        {
+            instance = new CatzArm();
+        }
+
+        return instance;
     }
 }

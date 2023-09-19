@@ -5,9 +5,6 @@
 package frc.robot;
 
 import java.util.ArrayList;
-import java.util.function.Supplier;
-
-import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.Timer;
@@ -52,8 +49,13 @@ public class Robot extends LoggedRobot
   private final SendableChooser<String> autoChooser = new SendableChooser<>();
   private final SendableChooser<String> sideChooser = new SendableChooser<>();
 
-  public static final CatzDrivetrain drivetrain = CatzDrivetrain.getInstance();
-  private final CatzRobotTracker robotTracker = CatzRobotTracker.getInstance();
+  private static final CatzDrivetrain drivetrain = CatzDrivetrain.getInstance();
+  private static final CatzRobotTracker robotTracker = CatzRobotTracker.getInstance();
+  private static final CatzElevator elevator = CatzElevator.getIntstance();
+  private static final CatzIntake intake = CatzIntake.getInstance();
+  private static final CatzArm    arm = CatzArm.getInstance();
+
+
 
   public static final AutonActionExecutor autonExecutor = AutonActionExecutor.getInstance();
   private final AutonRoutineSelector autonRoutineSelector = AutonRoutineSelector.getInstance();
@@ -144,9 +146,6 @@ public class Robot extends LoggedRobot
   //---------------------------------------------------------------------------------------------
   //  Mechanisms
   //---------------------------------------------------------------------------------------------
-  public static CatzElevator   elevator;
-  public static CatzArm        arm;
-  public static CatzIntake     intake;
   public static CatzRGB        led = new CatzRGB();
 
   //---------------------------------------------------------------------------------------------
@@ -282,13 +281,6 @@ public class Robot extends LoggedRobot
     //----------------------------------------------------------------------------------------------
     auton   = new CatzAutonomous();
     balance = new CatzBalance();
-
-    //----------------------------------------------------------------------------------------------
-    //  Mechanisms
-    //----------------------------------------------------------------------------------------------
-    elevator   = new CatzElevator();
-    arm        = new CatzArm();
-    intake     = new CatzIntake();
 
     System.out.println("Deploy robot code"); 
   }
