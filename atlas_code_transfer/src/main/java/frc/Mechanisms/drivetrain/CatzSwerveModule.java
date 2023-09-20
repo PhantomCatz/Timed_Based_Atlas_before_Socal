@@ -73,9 +73,16 @@ public class CatzSwerveModule {
 
         //double targetAngle = (Math.abs(desiredState.speedMetersPerSecond) <= (CatzConstants.DriveConstants.MAX_SPEED * 0.01)) ? getCurrentRotation().getDegrees() : desiredState.angle.getDegrees(); //Prevent rotating module if speed is less then 1%. Prevents Jittering.
 
-        double steerCommand = - steeringPID.calculate(getCurrentRotation().getDegrees(), desiredState.angle.getDegrees());
+        double steerCommand = - steeringPID.calculate(getCurrentRotation().getDegrees(), desiredState.angle.getDegrees());  //negative sign due to xbox translation to numbers in wpilib
         steerCommand = Math.max(-1.0, Math.min(1.0, steerCommand));
         io.setSteerPwrIO(steerCommand);
+
+        Logger.getInstance().recordOutput("Drive/targetError"       + Integer.toString(index), (getCurrentRotation().getDegrees() - desiredState.angle.getDegrees()));
+        Logger.getInstance().recordOutput("Drive/targetPosition"    + Integer.toString(index), desiredState.angle.getDegrees());
+        Logger.getInstance().recordOutput("Drive/currentRotation "  + Integer.toString(index), getCurrentRotation().getDegrees());
+        Logger.getInstance().recordOutput("Drive/velocity "         + Integer.toString(index), velocity);
+        Logger.getInstance().recordOutput("Drive/steeringpwr "      + Integer.toString(index), steerCommand);
+        Logger.getInstance().recordOutput("Drive/distanceMeters"    + Integer.toString(index), getModulePosition().distanceMeters);
     }
 
     public void setPower(double power)
@@ -103,6 +110,11 @@ public class CatzSwerveModule {
         wheelOffset = inputs.magEncoderValue;
     }
 
+    /**************************
+     * 
+     * @return
+     * Current rotaiton object
+     ***************************/
     private Rotation2d getCurrentRotation()
     {
         return Rotation2d.fromDegrees((inputs.magEncoderValue - wheelOffset)*360);

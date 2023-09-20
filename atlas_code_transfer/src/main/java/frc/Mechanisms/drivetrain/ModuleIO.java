@@ -14,6 +14,7 @@ public interface ModuleIO
     public double driveAppliedVolts = 0.0;
     public double steerAppliedVolts = 0.0;
     public double driveMtrOutputPercent = 0.0;
+    public double magEncDistance = 0.0;
 
  }
 

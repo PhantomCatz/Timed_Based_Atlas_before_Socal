@@ -108,8 +108,6 @@ public class CatzDrivetrain {
      **********************************************************/
     public void cmdProcSwerve(double leftJoyX, double leftJoyY, double rightJoyX, boolean isAutoAlignCubeTrue, boolean isAutoAlignConeTrue)
     {
-
-
         if(Math.sqrt(Math.pow(leftJoyX,2) + Math.pow(leftJoyY,2)) < 0.1){
             leftJoyX = 0.0;
             leftJoyY = 0.0;
@@ -207,7 +205,9 @@ public class CatzDrivetrain {
                                                                   getRotation2d());
         }
 
-
+        Logger.getInstance().recordOutput("Drive/chassis radians",        chassisSpeeds.omegaRadiansPerSecond);
+        Logger.getInstance().recordOutput("Drive/chassis x meters a sec", chassisSpeeds.vxMetersPerSecond);
+        Logger.getInstance().recordOutput("Drive/chassis y meters a sec", chassisSpeeds.vyMetersPerSecond);
      
         SwerveModuleState[] moduleStates = CatzConstants.DriveConstants.swerveDriveKinematics.toSwerveModuleStates(chassisSpeeds);
         
@@ -220,7 +220,10 @@ public class CatzDrivetrain {
         SwerveDriveKinematics.desaturateWheelSpeeds(states, CatzConstants.DriveConstants.MAX_SPEED);
 
         Logger.getInstance().recordOutput("Drive/module states", states);
-        Logger.getInstance().recordOutput("Drive/state speed pwr", states[0].speedMetersPerSecond);
+        Logger.getInstance().recordOutput("Drive/state speed pwr lt frnt", states[0].speedMetersPerSecond);
+        Logger.getInstance().recordOutput("Drive/state speed pwr lt back", states[1].speedMetersPerSecond);
+        Logger.getInstance().recordOutput("Drive/state speed pwr rt frnt", states[2].speedMetersPerSecond);
+        Logger.getInstance().recordOutput("Drive/state speed pwr rt back", states[3].speedMetersPerSecond);
         
 
         for(int i = 0; i < 4; i++)

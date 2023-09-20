@@ -55,7 +55,7 @@ public class CatzRobotTracker extends AbstractMechanism{
         //apriltag system
         if(visionLimelight.aprilTagInView())
         {
-            poseEstimator.addVisionMeasurement(visionLimelight.getLimelightBotPose(), Logger.getInstance().getRealTimestamp());
+            poseEstimator.addVisionMeasurement(visionLimelight.getLimelightBotPose(), Logger.getInstance().getRealTimestamp()); //TBD need see how to add confidence into the mix
         }
 
         //pose updates w/ drivetrain

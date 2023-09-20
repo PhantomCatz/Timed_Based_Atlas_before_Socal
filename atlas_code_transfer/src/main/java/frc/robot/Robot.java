@@ -401,7 +401,7 @@ public class Robot extends LoggedRobot
     currentTime.start();
 
     dataCollection.startDataCollection();
-    balance.StopBalancing();
+    //balance.StopBalancing(); could possible affect datacollection
 
     currentGameModeLED = gameModeLED.TeleOp;
   }
@@ -412,7 +412,8 @@ public class Robot extends LoggedRobot
   public void teleopPeriodic()
   {
     //DriveTrain Proc
-    drivetrain.cmdProcSwerve(xboxDrv.getLeftX(), xboxDrv.getLeftY(), xboxDrv.getRightX(), (xboxDrv.getLeftTriggerAxis() > 0.5), (xboxDrv.getRightTriggerAxis() > 0.5));
+   // drivetrain.cmdProcSwerve(xboxDrv.getLeftX(), xboxDrv.getLeftY(), xboxDrv.getRightX(), (xboxDrv.getLeftTriggerAxis() > 0.5), (xboxDrv.getRightTriggerAxis() > 0.5)); TBD for testing swerve issue
+    drivetrain.cmdProcSwerve(0.0, xboxDrv.getLeftY(), 0.0, (xboxDrv.getLeftTriggerAxis() > 0.5), (xboxDrv.getRightTriggerAxis() > 0.5));
 
     if(xboxDrv.getStartButtonPressed())
     {

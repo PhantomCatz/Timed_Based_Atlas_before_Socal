@@ -47,8 +47,6 @@ public class ModuleIOReal implements ModuleIO
         DRIVE_MOTOR.config_kP(0, 0.1);
         DRIVE_MOTOR.config_kI(0, 0);
         DRIVE_MOTOR.config_kD(0, 0);
-        
-
     }
 
     @Override
@@ -58,6 +56,7 @@ public class ModuleIOReal implements ModuleIO
         inputs.driveMtrSelectedSensorPosition = DRIVE_MOTOR.getSelectedSensorPosition();
         inputs.magEncoderValue = magEnc.get();
         inputs.driveMtrOutputPercent = DRIVE_MOTOR.getMotorOutputPercent();
+        inputs.magEncDistance = magEnc.getDistance();
     }
 
     @Override
