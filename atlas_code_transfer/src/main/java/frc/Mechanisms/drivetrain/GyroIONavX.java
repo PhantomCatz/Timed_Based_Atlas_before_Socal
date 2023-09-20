@@ -15,9 +15,9 @@ public class GyroIONavX implements GyroIO
     @Override
     public void updateInputs(GyroIOInputs inputs) 
     {
-      inputs.gyroAngle = navX.getAngle();
-      inputs.gyroYaw = navX.getYaw();
-      inputs.gyroRoll = navX.getRoll();
+      inputs.gyroAngle  = navX.getAngle();
+      inputs.gyroYaw    = navX.getYaw();
+      inputs.gyroRoll   = navX.getRoll();
     }
 
     @Override

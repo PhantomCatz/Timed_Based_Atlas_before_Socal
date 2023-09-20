@@ -12,6 +12,8 @@ import frc.DataLogger.*;
 
 public class CatzIntake
 {
+    private static CatzIntake instance = null;
+    
     private final IntakeIO io;
     private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
 
@@ -57,7 +59,7 @@ public class CatzIntake
     *  CatzIntake()
     *
     *---------------------------------------------------------------------------------------------*/
-    public CatzIntake()
+    private CatzIntake()
     {
         switch(CatzConstants.currentMode)
         {
@@ -416,6 +418,17 @@ public class CatzIntake
     public boolean isIntakeInPos()
     {
         return intakeInPosition;
+    }
+
+    //returns itself for singleton implementation
+    public static CatzIntake getInstance()
+    {
+        if(instance == null)
+        {
+            instance = new CatzIntake();
+        }
+
+        return instance;
     }
 
 

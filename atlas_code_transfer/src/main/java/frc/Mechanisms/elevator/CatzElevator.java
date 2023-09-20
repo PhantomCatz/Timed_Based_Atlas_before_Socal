@@ -8,14 +8,15 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Timer;
-import frc.Autonomous.CatzAutonomousPaths;
 import frc.DataLogger.CatzLog;
 import frc.DataLogger.DataCollection;
+import frc.Mechanisms.arm.CatzArm;
 
 
 
 public class CatzElevator
 {
+    private static CatzElevator instance = null;
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged  inputs = new ElevatorIOInputsAutoLogged();
 
@@ -38,7 +39,7 @@ public class CatzElevator
 
     private int numConsectSamples = 0;
 
-    public CatzElevator()
+    private CatzElevator()
     {
         switch(CatzConstants.currentMode)
         {
@@ -54,7 +55,7 @@ public class CatzElevator
         }
     }
 
-    //Called in RObot perioidc to collect all inputs at the START of every "main" loop cycle
+    //Called in Robot perioidc to collect all inputs at the START of every "main" loop cycle
     public void elevatorPerioidic()
     {
         io.updateInputs(inputs);
@@ -128,7 +129,7 @@ public class CatzElevator
         //logic used to determine if arm has cleared it's externion over mid noes
         if(armRetractProcess)
         {
-            if (Robot.arm.getArmEncoder() <= CatzConstants.ElevatorConstants.ELEVATOR_ARM_ENCODER_THRESHOLD)
+            if (CatzArm.getInstance().getArmEncoder() <= CatzConstants.ElevatorConstants.ELEVATOR_ARM_ENCODER_THRESHOLD)
             { 
                 elevatorSetToLowPos();
                 armRetractProcess = false;
@@ -235,7 +236,9 @@ public class CatzElevator
     *----------------------------------------------------------------------------------------*/
     public void elevatorSetToLowPos()
     {
-        io.configAllowableClosedloopErrorIO(0, CatzConstants.ElevatorConstants.ELEVATOR_CLOSELOOP_ERROR_THRESHOLD_LOW);
+        io.configAllowableClosedloopErrorIO(0, CatzConstants.
+                                                ElevatorConstants.
+                                                 ELEVATOR_CLOSELOOP_ERROR_THRESHOLD_LOW);
 
 
         io.elevatorConfig_kPIO(0, CatzConstants.ElevatorConstants.ELEVATOR_KP_LOW);
@@ -343,6 +346,17 @@ public class CatzElevator
     public boolean isElevatorInPos()
     {
         return elevatorInPosition;
+    }
+
+    //returns itself for singleton implementation
+    public static CatzElevator getIntstance()
+    {
+        if(instance == null)
+        {
+            instance = new CatzElevator();
+        }
+
+        return instance;
     }
       
 }

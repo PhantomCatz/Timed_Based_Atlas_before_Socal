@@ -5,6 +5,10 @@ import java.util.concurrent.TimeoutException;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.Mechanisms.arm.CatzArm;
+import frc.Mechanisms.drivetrain.CatzDrivetrain;
+import frc.Mechanisms.elevator.CatzElevator;
+import frc.Mechanisms.intake.CatzIntake;
 import frc.robot.CatzConstants;
 import frc.robot.Robot;
 
@@ -16,6 +20,11 @@ import frc.robot.Robot;
 @SuppressWarnings("unused")
 public class CatzAutonomousPaths
 {  
+    private static CatzDrivetrain drivetrain    = CatzDrivetrain.getInstance();
+    private static CatzElevator   elevator      = CatzElevator.getIntstance();
+    private static CatzIntake     intake        = CatzIntake.getInstance();
+    private static CatzArm        arm           = CatzArm.getInstance();
+
     public final SendableChooser<Enum> chosenAllianceColor = new SendableChooser<>();
     private final SendableChooser<Integer> chosenPath         = new SendableChooser<>();
 
@@ -407,25 +416,25 @@ public class CatzAutonomousPaths
     {
         ejectCube();
         setCommandStateAuton(Robot.COMMAND_UPDATE_STOW, Robot.GP_NULL);
-        Robot.intake.rollersOff();
+        intake.rollersOff();
     }
 
     public void scoreCone()
     {
         ejectCone();
         setCommandStateAuton(Robot.COMMAND_UPDATE_STOW, Robot.GP_NULL);
-        Robot.intake.rollersOff();
+        intake.rollersOff();
     }
 
     public void ejectCube()
     {
-        Robot.intake.rollersOutCube();
+        intake.rollersOutCube();
         Timer.delay(0.1); //TBD will need to change
     }
 
     public void ejectCone()
     {
-        Robot.intake.rollersOutCone();
+        intake.rollersOutCone();
         Timer.delay(0.2);
         
     }
@@ -443,25 +452,25 @@ public class CatzAutonomousPaths
 
         Robot.selectedGamePiece = gamePiece;
 
-        Robot.elevator.cmdProcElevator(0.0,   false, cmdState);
-        Robot.arm.cmdProcArm          (false, false, cmdState);
+        elevator.cmdProcElevator(0.0,   false, cmdState);
+        arm.cmdProcArm          (false, false, cmdState);
 
         if(cmdState == Robot.COMMAND_UPDATE_STOW)
         {
-            Robot.intake.cmdProcIntake(0.0, false, true, false, false, cmdState, gamePiece);
+            intake.cmdProcIntake(0.0, false, true, false, false, cmdState, gamePiece);
         }
         else
         {
-            Robot.intake.cmdProcIntake(0.0, false, false, false, false, cmdState, gamePiece);
+            intake.cmdProcIntake(0.0, false, false, false, false, cmdState, gamePiece);
         }
 
         if(cmdState != Robot.COMMAND_UPDATE_STOW)
         {
             while(!done)
             {
-                elevatorInPos = Robot.elevator.isElevatorInPos();
-                armInPos      = Robot.arm.isArmInPos();
-                intakeInPos   = Robot.intake.isIntakeInPos();
+                elevatorInPos = elevator.isElevatorInPos();
+                armInPos      = arm.isArmInPos();
+                intakeInPos   = intake.isIntakeInPos();
 
                 if(elevatorInPos && armInPos && intakeInPos)
                 {
@@ -476,9 +485,9 @@ public class CatzAutonomousPaths
                                        "Elev in position: " + elevatorInPos +
                                        " Arm in position: " + armInPos +
                                        " Intk in position: " + intakeInPos +
-                                       " Elev enc pos: " + Robot.elevator.getElevatorEncoder() +
-                                       " Arm enc pos: " + Robot.arm.getArmEncoder() +
-                                       " Intk enc pos: " + Robot.intake.getWristPosition()
+                                       " Elev enc pos: " + elevator.getElevatorEncoder() +
+                                       " Arm enc pos: " + arm.getArmEncoder() +
+                                       " Intk enc pos: " + intake.getWristPosition()
                                        );
                 }
 
@@ -490,18 +499,18 @@ public class CatzAutonomousPaths
     public void pickUpCone()
     {
         setCommandStateAuton(Robot.COMMAND_UPDATE_PICKUP_GROUND_CONE, Robot.GP_CONE);
-        Robot.intake.rollersInCone();
+        intake.rollersInCone();
     }
 
     public void pickUpCube()
     {
         setCommandStateAuton(Robot.COMMAND_UPDATE_PICKUP_GROUND_CUBE, Robot.GP_CUBE);
-        Robot.intake.rollersInCube();
+        intake.rollersInCube();
     }
 
     public void stow()
     {
-        Robot.intake.rollersOff();
+        intake.rollersOff();
         setCommandStateAuton(Robot.COMMAND_UPDATE_STOW, Robot.GP_NULL);
     }
 }
