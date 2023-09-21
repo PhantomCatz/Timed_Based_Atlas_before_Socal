@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+@SuppressWarnings("unused")
 public class DataCollection 
 {	
     Date date;	
@@ -47,6 +48,7 @@ public class DataCollection
     public static final int LOG_ID_DRV_STRAIGHT    = 8;
     public static final int LOG_ID_TURN_IN_PLACE   = 9;
     public static final int LOG_ID_BALANCE         = 10;
+    public static final int LOG_ID_TRAJECTORY      = 11;
 
     public boolean validLogID = true;
 
@@ -58,6 +60,7 @@ public class DataCollection
     private final String LOG_HDR_DRV_STRAIGHT = "time, delta-pos-cn,dis-rem-in,drv-pwr-kp,drv-pwr-clmp,drv-pwr,curr-angl,angl-err,angl-err-rate,turn-pwr-kp,turn-pwr-kd,turn-pwr,lf-mod-angl";
     private final String LOG_HDR_TURN_IN_PLACE = "time, cur-angle, cur-err, mtr-pwr";
     private final String LOG_HDR_BALANCE_MOD = "time,pitch,rate,power,pitchTerm,rateTerm,";
+    private final String LOG_HDR_TRAJECTORY = "time,cur_pos_x,cur_pos_y,cur_pos_orientation,goal_x,goal_y,goal_rotation,target_vel_x,target_vel_y,target_angvel,targetmodule_speed,currentmodule_speed,targetmodule_orientation,currentmodule_orientation";
 
     public String logStr;
 
@@ -125,6 +128,7 @@ public class DataCollection
         chosenDataID.addOption("Auton Drv Straight", LOG_ID_DRV_STRAIGHT);
         chosenDataID.addOption("Auton Turn In Place", LOG_ID_TURN_IN_PLACE);
         chosenDataID.addOption("Balance", LOG_ID_BALANCE);
+        chosenDataID.addOption("Trajectory", LOG_ID_TRAJECTORY);
 
         SmartDashboard.putData("Data Collection", chosenDataID);
     
@@ -182,6 +186,9 @@ public class DataCollection
             case LOG_ID_BALANCE:
                 pw.printf(LOG_HDR_BALANCE_MOD);
             break;
+            case LOG_ID_TRAJECTORY:
+            pw.printf(LOG_HDR_TRAJECTORY);
+        break;
             default :
                 pw.printf("Invalid Log Data ID");            
 
@@ -254,6 +261,9 @@ public class DataCollection
             break;
             case(LOG_ID_BALANCE):
                 mechanismName = "Balancing";
+            break;
+            case(LOG_ID_TRAJECTORY):
+                mechanismName = "Trajectory";
             break;
         }
         return mechanismName;

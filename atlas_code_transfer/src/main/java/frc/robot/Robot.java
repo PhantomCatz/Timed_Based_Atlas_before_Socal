@@ -338,6 +338,7 @@ public class Robot extends LoggedRobot
     //debug should be commented out for comp
 
     //intake.smartdashboardIntakeDebug();      
+    drivetrain.updateSensorValues();
   }
 
 

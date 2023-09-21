@@ -22,7 +22,7 @@ public class CatzDrivetrain {
     private GyroIO gyroIO;
     private GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
 
-    private static CatzSwerveModule[] swerveModules = new CatzSwerveModule[4];
+    public static CatzSwerveModule[] swerveModules = new CatzSwerveModule[4];
     private static CatzAprilTag aprilTag = CatzAprilTag.getInstance();
 
     public final CatzSwerveModule LT_FRNT_MODULE;
@@ -45,10 +45,15 @@ public class CatzDrivetrain {
     private final int RT_BACK_ENC_PORT = 7;
     private final int RT_FRNT_ENC_PORT = 8;
 
-    private double LT_FRNT_OFFSET = 0.0091; 
+    /*private double LT_FRNT_OFFSET = 0.0091; 
     private double LT_BACK_OFFSET = 0.0466;
     private double RT_BACK_OFFSET = 0.2567;
-    private double RT_FRNT_OFFSET = 0.0281;
+    private double RT_FRNT_OFFSET = 0.0281;*/
+
+    private double LT_FRNT_OFFSET = -0.2759; 
+    private double LT_BACK_OFFSET = -0.1707;
+    private double RT_BACK_OFFSET = 0.4169;
+    private double RT_FRNT_OFFSET = 0.1975;
 
     private ChassisSpeeds chassisSpeeds;
 
@@ -77,24 +82,27 @@ public class CatzDrivetrain {
 
         resetMagEncs();
         //Reset Mag Enc after startup
-        new Thread(() -> {
+        /*new Thread(() -> {
             try {
                 Thread.sleep(1000);
                 zeroGyro();
             } catch (Exception e) {
             }
-        }).start();
+        }).start();*/
+        zeroGyro();
     }
-
-    public void cmdProcSwerve(double leftJoyX, double leftJoyY, double rightJoyX, boolean isAutoAlignCubeTrue)
-    {
+    
+    public void updateSensorValues(){
         for(CatzSwerveModule module : swerveModules)
         {
             module.periodic();
         }
         gyroIO.updateInputs(gyroInputs);
-        Logger.getInstance().processInputs("Drive/gyroinputs ", gyroInputs);
+    }
 
+    public void cmdProcSwerve(double leftJoyX, double leftJoyY, double rightJoyX, boolean isAutoAlignCubeTrue)
+    {
+        Logger.getInstance().processInputs("Drive/gyroinputs ", gyroInputs);
 
         if(Math.sqrt(Math.pow(leftJoyX,2) + Math.pow(leftJoyY,2)) < 0.1){
             leftJoyX = 0.0;
@@ -156,7 +164,7 @@ public class CatzDrivetrain {
 
      
         SwerveModuleState[] moduleStates = CatzConstants.DriveConstants.swerveDriveKinematics.toSwerveModuleStates(chassisSpeeds);
-        
+        SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, CatzConstants.DriveConstants.MAX_SPEED);
         setSwerveModuleStates(moduleStates);
         
 
@@ -166,8 +174,6 @@ public class CatzDrivetrain {
 
     public void setSwerveModuleStates(SwerveModuleState[] states)
     {
-        SwerveDriveKinematics.desaturateWheelSpeeds(states, CatzConstants.DriveConstants.MAX_SPEED);
-
         for(int i = 0; i < 4; i++)
         {
             swerveModules[i].setDesiredState(states[i]);
@@ -260,7 +266,7 @@ public class CatzDrivetrain {
 
     public void zeroGyro()
     {
-      //GyroIO.setAngleAdjustmentIO(-gyroInputs.gyroYaw);
+      gyroIO.setAngleAdjustmentIO(0.0);
     }
 
     public void smartDashboardDriveTrain_DEBUG()

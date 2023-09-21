@@ -68,8 +68,8 @@ public final class CatzConstants {
         SWERVE_RIGHT_BACK_LOCATION
     );
 
-    public static final double MAX_SPEED = 4.0; // meters per second
-    public static final double MAX_ANGSPEED = 1.0; // radians per second
+    public static final double MAX_SPEED = 3.0; // meters per second
+    public static final double MAX_ANGSPEED = 6.0; // radians per second
 
     public static final double SDS_L1_GEAR_RATIO = 8.14;       //SDS mk4i L1 ratio reduction
     public static final double SDS_L2_GEAR_RATIO = 6.75;       //SDS mk4i L2 ratio reduction
@@ -79,17 +79,17 @@ public final class CatzConstants {
 
     //uses a trapezoidal velocity/time graph enforced with a PID loop
     private static ProfiledPIDController autoTurnPIDController
-            = new ProfiledPIDController(2, 0, 0, new TrapezoidProfile.Constraints(8, 8));
+            = new ProfiledPIDController(2, 0, 0, new TrapezoidProfile.Constraints(MAX_ANGSPEED, MAX_ANGSPEED));
 
     static{
         autoTurnPIDController.enableContinuousInput(-Math.PI, Math.PI); //offset clamped between these two values
-        autoTurnPIDController.setTolerance(Math.toRadians(10)); //tolerable error
+        autoTurnPIDController.setTolerance(Math.toRadians(0.1)); //tolerable error
     }
 
     // calculates target chassis motion when given current position and desired trajectory
     public static final HolonomicDriveController holonomicDriveController = new HolonomicDriveController(
-        new PIDController(0.35, 0, 0), // PID values for x offset
-        new PIDController(0.35, 0, 0), // PID values for y offset
+        new PIDController(0.15, 0, 0), // PID values for x offset
+        new PIDController(0.15, 0, 0), // PID values for y offset
         autoTurnPIDController // PID values for orientation offset
     );
  }

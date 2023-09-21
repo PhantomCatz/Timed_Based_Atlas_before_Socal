@@ -48,7 +48,6 @@ public class CatzLog
 
     public String toString()
     {
-    
         return robotTime +", " + robotData1 + ", " + robotData2 + ", " + robotData3 + ", " + robotData4 + ", " + robotData5 + ", " 
                             + robotData6 + ", " + robotData7 + ", " + robotData8 + ", " + robotData9 + ", " + robotData10 + ","
                             + robotData11 + "," + robotData12 + ", " + robotData13+","  + robotData14+  ","

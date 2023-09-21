@@ -30,7 +30,4 @@ public class GyroIONavX implements GyroIO
     {
         navX.setAngleAdjustment(gyroYaw);
     }
-
-
 }
-

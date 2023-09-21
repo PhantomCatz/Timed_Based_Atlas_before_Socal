@@ -31,7 +31,9 @@ public class ModuleIOReal implements ModuleIO
 
     private final int     STEER_CURRENT_LIMIT_AMPS      = 30;
 
-    public ModuleIOReal(int driveMotorIDIO, int steerMotorIDIO, DutyCycleEncoder magEnc)
+    private final double velFF = 2.2;
+
+    public ModuleIOReal(int driveMotorIDIO, int steerMotorIDIO, DutyCycleEncoder magEnc) 
     {
         
         this.magEnc = magEnc;
@@ -47,10 +49,8 @@ public class ModuleIOReal implements ModuleIO
         DRIVE_MOTOR.setNeutralMode(NeutralMode.Brake);
 
         DRIVE_MOTOR.config_kP(0, 0.1);
-        DRIVE_MOTOR.config_kI(0, 0);
-        DRIVE_MOTOR.config_kD(0, 0);
-        
-
+        DRIVE_MOTOR.config_kI(0, 0.0);
+        DRIVE_MOTOR.config_kD(0, 0.0);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class ModuleIOReal implements ModuleIO
     @Override
     public void setDrivePwrVelocityIO(double velocity)
     {
-        DRIVE_MOTOR.set(ControlMode.Velocity, velocity);
+        DRIVE_MOTOR.set(ControlMode.Velocity, velocity * velFF);
     }
 
     @Override

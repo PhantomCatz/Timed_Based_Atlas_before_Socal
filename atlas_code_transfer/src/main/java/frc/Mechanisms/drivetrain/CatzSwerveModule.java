@@ -25,7 +25,7 @@ public class CatzSwerveModule {
     private final ModuleIOInputsAutoLogged   inputs = new ModuleIOInputsAutoLogged();
 
     private final PIDController steeringPID;
-    private final double kP = 0.005;
+    private final double kP = 0.002;
     private final double kI = 0.0;
     private final double kD = 0.0;
 
@@ -71,8 +71,6 @@ public class CatzSwerveModule {
 
     public void setDesiredState(SwerveModuleState desiredState) //basically a function made solely for the purpose of following a trajectory. could be used for teleop though.
     {
-        desiredState = SwerveModuleState.optimize(desiredState, getCurrentRotation()); //optimizes wheel rotation so that the furthest a wheel will ever rotate is 90 degrees.
-
         double velocity = Conversions.MPSToFalcon(desiredState.speedMetersPerSecond, CatzConstants.DriveConstants.DRVTRAIN_WHEEL_CIRCUMFERENCE, CatzConstants.DriveConstants.SDS_L2_GEAR_RATIO);
         io.setDrivePwrVelocityIO(velocity);
 
@@ -108,14 +106,14 @@ public class CatzSwerveModule {
         wheelOffset = inputs.magEncoderValue;
     }
 
-    private Rotation2d getCurrentRotation()
+    public Rotation2d getCurrentRotation()
     {
         return Rotation2d.fromDegrees((inputs.magEncoderValue - wheelOffset)*360);
     }
 
     public SwerveModuleState getModuleState()
     {
-        double velocity = Conversions.falconToMPS(inputs.driveMtrSelectedSensorVelocity , CatzConstants.DriveConstants.DRVTRAIN_WHEEL_CIRCUMFERENCE, CatzConstants.DriveConstants.SDS_L2_GEAR_RATIO);
+        double velocity = Conversions.falconToMPS(inputs.driveMtrSelectedSensorVelocity, CatzConstants.DriveConstants.DRVTRAIN_WHEEL_CIRCUMFERENCE, CatzConstants.DriveConstants.SDS_L2_GEAR_RATIO);
         
         return new SwerveModuleState(velocity, getCurrentRotation());
     }
