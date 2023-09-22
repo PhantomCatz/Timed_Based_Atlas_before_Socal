@@ -31,7 +31,7 @@ public class ModuleIOReal implements ModuleIO
 
     private final int     STEER_CURRENT_LIMIT_AMPS      = 30;
 
-    private final double velFF = 2.2;
+    private final double velFF = 1.5;
 
     public ModuleIOReal(int driveMotorIDIO, int steerMotorIDIO, DutyCycleEncoder magEnc) 
     {

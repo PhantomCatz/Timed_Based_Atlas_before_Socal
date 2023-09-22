@@ -25,9 +25,9 @@ public class CatzSwerveModule {
     private final ModuleIOInputsAutoLogged   inputs = new ModuleIOInputsAutoLogged();
 
     private final PIDController steeringPID;
-    private final double kP = 0.002;
+    private final double kP = 0.005;
     private final double kI = 0.0;
-    private final double kD = 0.0;
+    private final double kD = 0.00005;
 
     private DutyCycleEncoder magEnc;
     private DigitalInput MagEncPWMInput;

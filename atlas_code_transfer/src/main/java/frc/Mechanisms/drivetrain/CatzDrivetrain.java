@@ -82,14 +82,13 @@ public class CatzDrivetrain {
 
         resetMagEncs();
         //Reset Mag Enc after startup
-        /*new Thread(() -> {
+        new Thread(() -> {
             try {
                 Thread.sleep(1000);
                 zeroGyro();
             } catch (Exception e) {
             }
-        }).start();*/
-        zeroGyro();
+        }).start();
     }
     
     public void updateSensorValues(){
@@ -218,7 +217,7 @@ public class CatzDrivetrain {
 
     public double getGyroAngle()
     {
-        return gyroInputs.gyroAngle;
+        return - gyroInputs.gyroAngle;
     }
 
     public void stopDriving(){

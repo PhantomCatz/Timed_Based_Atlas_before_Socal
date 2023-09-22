@@ -18,7 +18,7 @@ import frc.robot.Robot;
 
 // Follows a trajectory
 public class TrajectoryFollowingAction implements ActionBase{
-    private final double EXTRA_TIME = 0.0;
+    private final double EXTRA_TIME = 4.0;
 
     private final Timer timer = new Timer();
     private final HolonomicDriveController controller;
@@ -62,10 +62,13 @@ public class TrajectoryFollowingAction implements ActionBase{
     public void update() {
         double currentTime = timer.get();
         Trajectory.State goal = trajectory.sample(currentTime);
+
         Pose2d currentPosition = robotTracker.getEstimatedPosition();
         currentPosition = new Pose2d(currentPosition.getX(), currentPosition.getY(), Rotation2d.fromDegrees(driveTrain.getGyroAngle()));
         
         ChassisSpeeds adjustedSpeed = controller.calculate(currentPosition, goal, targetHeading);
+        adjustedSpeed.omegaRadiansPerSecond = - adjustedSpeed.omegaRadiansPerSecond;
+
         SwerveModuleState[] targetModuleStates = CatzConstants.DriveConstants.swerveDriveKinematics.toSwerveModuleStates(adjustedSpeed);
         for(int i=0; i<4; i++){
             targetModuleStates[i] = SwerveModuleState.optimize(targetModuleStates[i], driveTrain.swerveModules[i].getCurrentRotation());
@@ -73,7 +76,7 @@ public class TrajectoryFollowingAction implements ActionBase{
         driveTrain.setSwerveModuleStates(targetModuleStates);
 
         if((DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_TRAJECTORY)) 
-        {        
+        {
             data = new CatzLog( 
                 currentTime, 
                 currentPosition.getX(), currentPosition.getY(), currentPosition.getRotation().getDegrees(),
