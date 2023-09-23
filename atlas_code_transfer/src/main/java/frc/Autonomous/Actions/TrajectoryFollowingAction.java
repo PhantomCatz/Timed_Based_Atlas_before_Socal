@@ -18,7 +18,9 @@ import frc.robot.Robot;
 
 // Follows a trajectory
 public class TrajectoryFollowingAction implements ActionBase{
-    private final double EXTRA_TIME = 4.0;
+    private final double TIMEOUT_RATIO = 1.5;
+    private final double END_POS_ERROR = 0.05;
+    private final double END_ROT_ERROR = Math.toRadians(5);
 
     private final Timer timer = new Timer();
     private final HolonomicDriveController controller;
@@ -53,7 +55,15 @@ public class TrajectoryFollowingAction implements ActionBase{
     // calculates if trajectory is finished
     @Override
     public boolean isFinished() {
-        return timer.hasElapsed(trajectory.getTotalTimeSeconds() + EXTRA_TIME); //will only work if the code is configured correctly.
+        double maxTime = trajectory.getTotalTimeSeconds();
+        Pose2d dist = trajectory.sample(maxTime).poseMeters.relativeTo(robotTracker.getEstimatedPosition());
+
+        return 
+            timer.get() > maxTime * TIMEOUT_RATIO || 
+            (
+                dist.getRotation().getDegrees() <= END_ROT_ERROR &&
+                Math.sqrt(Math.pow(dist.getX(), 2) + Math.pow(dist.getY(), 2)) <= END_POS_ERROR
+            );
     }
 
     // sets swerve modules to their target states so that the robot will follow the trajectory
@@ -62,21 +72,18 @@ public class TrajectoryFollowingAction implements ActionBase{
     public void update() {
         double currentTime = timer.get();
         Trajectory.State goal = trajectory.sample(currentTime);
-
         Pose2d currentPosition = robotTracker.getEstimatedPosition();
-        currentPosition = new Pose2d(currentPosition.getX(), currentPosition.getY(), Rotation2d.fromDegrees(driveTrain.getGyroAngle()));
         
         ChassisSpeeds adjustedSpeed = controller.calculate(currentPosition, goal, targetHeading);
-        adjustedSpeed.omegaRadiansPerSecond = - adjustedSpeed.omegaRadiansPerSecond;
 
         SwerveModuleState[] targetModuleStates = CatzConstants.DriveConstants.swerveDriveKinematics.toSwerveModuleStates(adjustedSpeed);
-        for(int i=0; i<4; i++){
+        for(int i = 0; i < 4; i++)
+        {
             targetModuleStates[i] = SwerveModuleState.optimize(targetModuleStates[i], driveTrain.swerveModules[i].getCurrentRotation());
         }
         driveTrain.setSwerveModuleStates(targetModuleStates);
 
-        if((DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_TRAJECTORY)) 
-        {
+        if((DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_TRAJECTORY)){
             data = new CatzLog( 
                 currentTime, 
                 currentPosition.getX(), currentPosition.getY(), currentPosition.getRotation().getDegrees(),
@@ -87,8 +94,7 @@ public class TrajectoryFollowingAction implements ActionBase{
                 targetModuleStates[0].angle.getDegrees(),
                 driveTrain.LT_FRNT_MODULE.getModuleState().angle.getDegrees(),
                 0.0, 0
-            );
-                                    
+            );                 
             Robot.dataCollection.logData.add(data);
         }
 

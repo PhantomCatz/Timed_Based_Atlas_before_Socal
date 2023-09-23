@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.PowerDistribution;
 
 import frc.DataLogger.CatzLog;
@@ -361,7 +362,9 @@ public class Robot extends LoggedRobot
   @Override
   public void autonomousInit() 
   {
-    robotTracker.resetPosition(new Pose2d());
+    robotTracker.resetPosition(new Pose2d(0.0,0.0,Rotation2d.fromDegrees(180.0)));
+    drivetrain.zeroGyro();
+    Timer.delay(50 / 1000.0);
     autonRoutineSelector.updateSelectedRoutine();
     autonExecutor.start();    
     
@@ -370,14 +373,6 @@ public class Robot extends LoggedRobot
     currentTime.start();
 
     currentGameModeLED = gameModeLED.InAutonomous;
-
-    navX.reset();
-
-    navX.setAngleAdjustment(-navX.getYaw() + 180.0); //set navx's zero position to opposite way robot is facing
-    
-    Timer.delay(OFFSET_DELAY);  //TBD - This should be 
-
-    //paths.executeSelectedPath(); TBD new autonomous
   }
 
   /** This function is called periodically during autonomous. */

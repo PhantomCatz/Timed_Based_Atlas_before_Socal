@@ -10,6 +10,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.Mechanisms.Odometry.CatzAprilTag;
 import frc.Mechanisms.Odometry.CatzRobotTracker;
 import frc.robot.CatzConstants;
@@ -79,16 +80,7 @@ public class CatzDrivetrain {
         swerveModules[2] = RT_FRNT_MODULE;
         swerveModules[3] = RT_BACK_MODULE;
 
-
         resetMagEncs();
-        //Reset Mag Enc after startup
-        new Thread(() -> {
-            try {
-                Thread.sleep(1000);
-                zeroGyro();
-            } catch (Exception e) {
-            }
-        }).start();
     }
     
     public void updateSensorValues(){
@@ -173,8 +165,8 @@ public class CatzDrivetrain {
 
     public void setSwerveModuleStates(SwerveModuleState[] states)
     {
-        for(int i = 0; i < 4; i++)
-        {
+        for(int i = 0; i < states.length; i++){
+            // states[i] = SwerveModuleState.optimize(states[i], swerveModules[i].getCurrentRotation());
             swerveModules[i].setDesiredState(states[i]);
         }
     }
@@ -217,7 +209,7 @@ public class CatzDrivetrain {
 
     public double getGyroAngle()
     {
-        return - gyroInputs.gyroAngle;
+        return -gyroInputs.gyroAngle;
     }
 
     public void stopDriving(){
@@ -265,7 +257,7 @@ public class CatzDrivetrain {
 
     public void zeroGyro()
     {
-      gyroIO.setAngleAdjustmentIO(0.0);
+      gyroIO.resetNavXIO();
     }
 
     public void smartDashboardDriveTrain_DEBUG()
@@ -275,7 +267,7 @@ public class CatzDrivetrain {
 
     public void smartDashboardDriveTrain()
     {
-        
+        SmartDashboard.putNumber("Gyro", gyroInputs.gyroAngle);
     }
 
     public static CatzDrivetrain getInstance()
