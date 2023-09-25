@@ -84,6 +84,17 @@ public class CatzDrivetrain {
         }).start();
     }
 
+    //returns itself for singleton implementation
+    public static CatzDrivetrain getInstance()
+    {
+        if(instance == null)
+        {
+            instance = new CatzDrivetrain();
+        }
+
+        return instance;
+    }
+
     /**********************************************************
      * 
      * drivetrainPeriodic collects all inputs into the code before any logic is done
@@ -108,7 +119,7 @@ public class CatzDrivetrain {
      * Called up in teleop periodic
      * 
      **********************************************************/
-    public void cmdProcSwerve(double leftJoyX, double leftJoyY, double rightJoyX, boolean isAutoAlignCubeTrue, boolean isAutoAlignConeTrue)
+    public void cmdProcSwerveKinematics(double leftJoyX, double leftJoyY, double rightJoyX, boolean isAutoAlignCubeTrue, boolean isAutoAlignConeTrue)
     {
         if(Math.sqrt(Math.pow(leftJoyX,2) + Math.pow(leftJoyY,2)) < 0.1){
             leftJoyX = 0.0;
@@ -234,6 +245,7 @@ public class CatzDrivetrain {
         }
     }
 
+
     /*************************************************************
      * 
      * Swerve drive state misc methods
@@ -355,16 +367,5 @@ public class CatzDrivetrain {
         RT_FRNT_MODULE.smartDashboardModules();
         RT_BACK_MODULE.smartDashboardModules();
     }    
-
-    //returns itself for singleton implementation
-    public static CatzDrivetrain getInstance()
-    {
-        if(instance == null)
-        {
-            instance = new CatzDrivetrain();
-        }
-
-        return instance;
-    }
 
 }

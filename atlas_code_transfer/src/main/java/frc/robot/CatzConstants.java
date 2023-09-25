@@ -219,9 +219,9 @@ public static final class ElevatorConstants
     public static final double ELEVATOR_KI_LOW = 0.0002;
     public static final double ELEVATOR_KD_LOW = 0.001;
 
-    public static final double ELEVATOR_KP_MID = 0.083;
+    public static final double ELEVATOR_KP_MID = 0.080;
     public static final double ELEVATOR_KI_MID = 0.0002;
-    public static final double ELEVATOR_KD_MID = 0.0;
+    public static final double ELEVATOR_KD_MID = 0.001;
 
     public static final double ELEVATOR_KP_HIGH = ELEVATOR_KP_MID;
     public static final double ELEVATOR_KI_HIGH = ELEVATOR_KI_MID;

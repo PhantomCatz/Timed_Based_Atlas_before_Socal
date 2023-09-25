@@ -75,7 +75,18 @@ public class CatzIntake
         }
     
         pid = new PIDController(CatzConstants.IntakeConstants.GROSS_kP, CatzConstants.IntakeConstants.GROSS_kI, CatzConstants.IntakeConstants.GROSS_kD);
-       
+        startIntakeThread();
+    }
+
+    //returns itself for singleton implementation
+    public static CatzIntake getInstance()
+    {
+        if(instance == null)
+        {
+            instance = new CatzIntake();
+        }
+
+        return instance;
     }
 
 
@@ -96,6 +107,7 @@ public class CatzIntake
                                                                                       int CmdStateUpdate, 
                                                                                       int gamePiece)
     {
+        wristPwr = -wristPwr; //xbox controllers invert the y direction on a joystick so we revert the changes in code
 
         //Manual Control of Intake
         if(manualMode){                
@@ -191,75 +203,6 @@ public class CatzIntake
 
 
 
-        //Pid controller that determines wheather the intake is in position and calculated a target pwr with pid and gravity
-        if(pidEnable)   
-        {
-            //----------------------------------------------------------------------------------
-            //  Chk if at final position
-            //----------------------------------------------------------------------------------
-            currentPosition = inputs.wristPosEnc / CatzConstants.IntakeConstants.WRIST_CNTS_PER_DEGREE;
-
-            positionError = currentPosition - targetPositionDeg;
-
-
-            if  ((Math.abs(positionError) <= CatzConstants.IntakeConstants.INTAKE_POS_ERROR_THRESHOLD_DEG))
-            {
-                numConsectSamples++;
-                if(numConsectSamples >= 1)  //-TBD how can we raise the counter?
-                {   
-                    intakeInPosition = true;
-                }
-            }
-            else
-            {
-                numConsectSamples = 0;
-            }
-            
-            
-            if(Math.abs(positionError) >= CatzConstants.IntakeConstants.PID_FINE_GROSS_THRESHOLD_DEG)
-            {
-                pid.setP(CatzConstants.IntakeConstants.GROSS_kP);
-                pid.setI(CatzConstants.IntakeConstants.GROSS_kI);
-                pid.setD(CatzConstants.IntakeConstants.GROSS_kD);
-            }
-            else if(Math.abs(positionError) < CatzConstants.IntakeConstants.PID_FINE_GROSS_THRESHOLD_DEG)
-            {
-                pid.setP(CatzConstants.IntakeConstants.FINE_kP);
-                pid.setI(CatzConstants.IntakeConstants.FINE_kI);
-                pid.setD(CatzConstants.IntakeConstants.FINE_kD);
-            }
-
-            pidPower = pid.calculate(currentPosition, targetPositionDeg);
-            ffPower = calculateGravityFF();
-            targetPower = pidPower + ffPower;
-
-            //-------------------------------------------------------------
-            //  checking if we did not get updated position value(Sampling Issue).
-            //  If no change in position, this give invalid target power(kD issue). -TBD shouldn't d term zero out?
-            //  Therefore, go with prev targetPower Value.
-            //-------------------------------------------------------------------
-            if(prevCurrentPosition == currentPosition)
-            {
-                targetPower = prevTargetPwr;
-            }
-
-            //----------------------------------------------------------------------------------
-            //  If we are going to Stow Position & have passed the power cutoff angle, set
-            //  power to 0, otherwise calculate new motor power based on position error and 
-            //  current angle
-            //----------------------------------------------------------------------------------
-            if(targetPositionDeg == CatzConstants.IntakeConstants.STOW_ENC_POS && currentPosition > CatzConstants.IntakeConstants.STOW_CUTOFF)
-            {
-                targetPower = 0.0;
-            }
-
-            io.wristSetPercentOuputIO(targetPower);
-
-            prevCurrentPosition = currentPosition;
-            prevTargetPwr = targetPower;
-           
-        }
-
         //Roller Commands depending on if cube or cone
         if(rollersIn)
         {
@@ -325,6 +268,93 @@ public class CatzIntake
 
     }
 
+
+
+    /****
+     * 
+     *Start intake thread
+     */
+    private void startIntakeThread()
+    {
+        Thread intakeThread = new Thread(() ->
+        {
+            while(true)
+            {
+            
+             //Pid controller that determines wheather the intake is in position and calculated a target pwr with pid and gravity
+             if(pidEnable)   
+             {
+                 //----------------------------------------------------------------------------------
+                 //  Chk if at final position
+                 //----------------------------------------------------------------------------------
+                 currentPosition = inputs.wristPosEnc / CatzConstants.IntakeConstants.WRIST_CNTS_PER_DEGREE;
+     
+                 positionError = currentPosition - targetPositionDeg;
+     
+     
+                 if  ((Math.abs(positionError) <= CatzConstants.IntakeConstants.INTAKE_POS_ERROR_THRESHOLD_DEG))
+                 {
+                     numConsectSamples++;
+                     if(numConsectSamples >= 1)  //-TBD how can we raise the counter?
+                     {   
+                         intakeInPosition = true;
+                     }
+                 }
+                 else
+                 {
+                     numConsectSamples = 0;
+                 }
+                 
+                 
+                 if(Math.abs(positionError) >= CatzConstants.IntakeConstants.PID_FINE_GROSS_THRESHOLD_DEG)
+                 {
+                     pid.setP(CatzConstants.IntakeConstants.GROSS_kP);
+                     pid.setI(CatzConstants.IntakeConstants.GROSS_kI);
+                     pid.setD(CatzConstants.IntakeConstants.GROSS_kD);
+                 }
+                 else if(Math.abs(positionError) < CatzConstants.IntakeConstants.PID_FINE_GROSS_THRESHOLD_DEG)
+                 {
+                     pid.setP(CatzConstants.IntakeConstants.FINE_kP);
+                     pid.setI(CatzConstants.IntakeConstants.FINE_kI);
+                     pid.setD(CatzConstants.IntakeConstants.FINE_kD);
+                 }
+     
+                 pidPower = pid.calculate(currentPosition, targetPositionDeg);
+                 ffPower = calculateGravityFF();
+                 targetPower = pidPower + ffPower;
+     
+                 //-------------------------------------------------------------
+                 //  checking if we did not get updated position value(Sampling Issue).
+                 //  If no change in position, this give invalid target power(kD issue). -TBD shouldn't d term zero out?
+                 //  Therefore, go with prev targetPower Value.
+                 //-------------------------------------------------------------------
+                 if(prevCurrentPosition == currentPosition)
+                 {
+                     targetPower = prevTargetPwr;
+                 }
+     
+                 //----------------------------------------------------------------------------------
+                 //  If we are going to Stow Position & have passed the power cutoff angle, set
+                 //  power to 0, otherwise calculate new motor power based on position error and 
+                 //  current angle
+                 //----------------------------------------------------------------------------------
+                 if(targetPositionDeg == CatzConstants.IntakeConstants.STOW_ENC_POS && currentPosition > CatzConstants.IntakeConstants.STOW_CUTOFF)
+                 {
+                     targetPower = 0.0;
+                 }
+     
+                 io.wristSetPercentOuputIO(targetPower);
+     
+                 prevCurrentPosition = currentPosition;
+                 prevTargetPwr = targetPower;
+                
+                 Logger.getInstance().recordOutput("Intake/threadtime", Logger.getInstance().getRealTimestamp());
+                 Logger.getInstance().recordOutput("Intake/targetpower", targetPower);
+                 Logger.getInstance().recordOutput("Intake/pidPower", pidPower);
+             }
+            }
+        });
+    }
 
 
     /*----------------------------------------------------------------------------------------------
@@ -418,17 +448,6 @@ public class CatzIntake
     public boolean isIntakeInPos()
     {
         return intakeInPosition;
-    }
-
-    //returns itself for singleton implementation
-    public static CatzIntake getInstance()
-    {
-        if(instance == null)
-        {
-            instance = new CatzIntake();
-        }
-
-        return instance;
     }
 
 

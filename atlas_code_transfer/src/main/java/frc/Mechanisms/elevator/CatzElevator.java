@@ -60,9 +60,9 @@ public class CatzElevator
     {
         io.updateInputs(inputs);
         Logger.getInstance().processInputs("elevator", inputs);
+        checkLimitSwitches();
     }
-
-
+    
     /*-----------------------------------------------------------------------------------------
     *  
     *  cmdProcElevator()
@@ -193,7 +193,7 @@ public class CatzElevator
 
         //Logging elevator Outputs
         Logger.getInstance().recordOutput("Elevator/targetEncManual", targetPositionEnc);
-
+        Logger.getInstance().recordOutput("Elevator/elevatorInPos", elevatorInPosition);
 
        if((DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_ELEVATOR))
         {
@@ -309,7 +309,7 @@ public class CatzElevator
             lowSwitchState = false;
         }
 
-        if(inputs.isRevLimitSwitchClosed)
+        if(inputs.isFwdLimitSwitchClosed)
         {
             io.setSelectedSensorPositionIO(CatzConstants.ElevatorConstants.ELEVATOR_POS_ENC_CNTS_HIGH);
             highSwitchState = true;

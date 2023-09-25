@@ -52,11 +52,24 @@ public class CatzArm
         }
 
     }
+
+        //returns itself for singleton implementation
+        public static CatzArm getInstance()
+        {
+            if(instance == null)
+            {
+                instance = new CatzArm();
+            }
+    
+            return instance;
+        }
+
     //collect all arm inputs in robot periodic before any cmd proc units run
     public void armPeriodic()
     {
         io.updateInputs(inputs);
         Logger.getInstance().processInputs("arm", inputs);
+        checkLimitSwitches();
     }
 
     /*-----------------------------------------------------------------------------------------
@@ -237,16 +250,5 @@ public class CatzArm
     public boolean isArmInPos()
     {
         return armInPosition;
-    }
-
-    //returns itself for singleton implementation
-    public static CatzArm getInstance()
-    {
-        if(instance == null)
-        {
-            instance = new CatzArm();
-        }
-
-        return instance;
     }
 }

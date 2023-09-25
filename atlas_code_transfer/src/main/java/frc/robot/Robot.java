@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 
 import frc.DataLogger.CatzLog;
@@ -43,11 +44,6 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
  */
 public class Robot extends LoggedRobot 
 {
-  //---------------------------------------------------------------------------------------------
-  //  Autonomous trajectory
-  //---------------------------------------------------------------------------------------------
-  private final SendableChooser<String> autoChooser = new SendableChooser<>();
-  private final SendableChooser<String> sideChooser = new SendableChooser<>();
 
   private static final CatzDrivetrain drivetrain = CatzDrivetrain.getInstance();
   private static final CatzRobotTracker robotTracker = CatzRobotTracker.getInstance();
@@ -55,12 +51,6 @@ public class Robot extends LoggedRobot
   private static final CatzIntake intake = CatzIntake.getInstance();
   private static final CatzArm    arm = CatzArm.getInstance();
 
-
-
-  public static final AutonActionExecutor autonExecutor = AutonActionExecutor.getInstance();
-  private final AutonRoutineSelector autonRoutineSelector = AutonRoutineSelector.getInstance();
-
-  private static final Timer autonTimer = new Timer();
 
   //---------------------------------------------------------------------------------------------
   //  Shared Libraries & Utilities
@@ -284,24 +274,16 @@ public class Robot extends LoggedRobot
 
     System.out.println("Deploy robot code"); 
   }
-
-  /**
-   * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
-   * that you want ran during disabled, autonomous, teleoperated and test.
-   *
-   * <p>This runs after the mode specific periodic functions, but before LiveWindow and
-   * SmartDashboard integrated updating.
-   */
   @Override
   public void robotPeriodic() 
   {
-    //----------------------------------------------------------------------------------------------
-    //  Periodic calls that update the inputs(sensors/motor encoders) for each "main" loop iteration 
-    //----------------------------------------------------------------------------------------------
-    drivetrain.drivetrainPeriodic();
-    elevator.elevatorPerioidic();
-    arm.armPeriodic();
-    intake.intakePeriodic();
+    if(!DriverStation.isTeleopEnabled())
+    {
+      drivetrain.drivetrainPeriodic();
+      elevator.elevatorPerioidic();
+      arm.armPeriodic();
+      intake.intakePeriodic();
+    }
 
 
     //----------------------------------------------------------------------------------------------
@@ -320,8 +302,6 @@ public class Robot extends LoggedRobot
     drivetrain.smartDashboardDriveTrain();
     elevator.smartDashboardElevator();
     elevator.smartDashboardElevator_DEBUG();
-    elevator.checkLimitSwitches();
-    arm.checkLimitSwitches();
     //balance.SmartDashboardBalanceDebug();
 
         
@@ -340,22 +320,9 @@ public class Robot extends LoggedRobot
   *  autonomousXxx
   *
   *----------------------------------------------------------------------------------------*/
-  /**
-   * This autonomous (along with the chooser code above) shows how to select between different
-   * autonomous modes using the dashboard. The sendable chooser code works with the Java
-   * SmartDashboard. If you prefer the LabVIEW Dashboard, remove all of the chooser code and
-   * uncomment the getString line to get the auto name from the text box below the Gyro
-   *
-   * <p>You can add additional auto modes by adding additional comparisons to the switch structure
-   * below with additional strings. If using the SendableChooser make sure to add them to the
-   * chooser code above as well.
-   */
   @Override
   public void autonomousInit() 
   {
-    robotTracker.resetPosition(new Pose2d());
-    autonRoutineSelector.updateSelectedRoutine();
-    autonExecutor.start();    
     
     //drivetrain.setBrakeMode();
     currentTime.reset();
@@ -403,9 +370,16 @@ public class Robot extends LoggedRobot
   @Override
   public void teleopPeriodic()
   {
+    //----------------------------------------------------------------------------------------------
+    //  Periodic calls that update the inputs(sensors/motor encoders) for each "main" loop iteration 
+    //----------------------------------------------------------------------------------------------
+    drivetrain.drivetrainPeriodic();
+    elevator.elevatorPerioidic();
+    arm.armPeriodic();
+    intake.intakePeriodic();
+
     //DriveTrain Proc
-   // drivetrain.cmdProcSwerve(xboxDrv.getLeftX(), xboxDrv.getLeftY(), xboxDrv.getRightX(), (xboxDrv.getLeftTriggerAxis() > 0.5), (xboxDrv.getRightTriggerAxis() > 0.5)); TBD for testing swerve issue
-    drivetrain.cmdProcSwerve(0.0, xboxDrv.getLeftY(), 0.0, (xboxDrv.getLeftTriggerAxis() > 0.5), (xboxDrv.getRightTriggerAxis() > 0.5));
+
 
     if(xboxDrv.getStartButtonPressed())
     {
@@ -448,7 +422,7 @@ public class Robot extends LoggedRobot
                    xboxAux.getLeftTriggerAxis()  >= 0.1,   //Manual Retract Arm 
                    commandedStateUpdate); 
 
-    intake.cmdProcIntake(-xboxAux.getLeftY(),                   //Semi-manual override TBD value sign switch should be done inside class.
+    intake.cmdProcIntake( xboxAux.getLeftY(),                   //Semi-manual override TBD value sign switch should be done inside class.
                           xboxAux.getRightBumper() | xboxDrv.getRightBumper(),             //Roller in 
                           xboxAux.getLeftBumper() | xboxDrv.getLeftBumper(),              //Roller out
                           xboxAux.getLeftStickButtonPressed(),  //Enter all-manual mode
@@ -492,9 +466,7 @@ public class Robot extends LoggedRobot
   @Override
   public void disabledInit()
   {
-    autonTimer.stop();
-    autonExecutor.stop();
-    AutonActionExecutor.resetInstance();
+
 
     
     System.out.println( "intake temp " + intake.intakeWristTemp());
