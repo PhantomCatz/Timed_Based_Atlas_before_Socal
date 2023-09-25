@@ -16,8 +16,8 @@ import frc.robot.CatzConstants;
 import frc.robot.Robot;
 import frc.robot.Robot.gameModeLED;
 
-public class CatzDrivetrain_OT {
-    private static CatzDrivetrain_OT instance = null;
+public class CatzDrivetrain {
+    private static CatzDrivetrain instance = null;
 
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
@@ -54,7 +54,7 @@ public class CatzDrivetrain_OT {
 
     private AHRS navX;
 
-    private CatzDrivetrain_OT()
+    private CatzDrivetrain()
     {
         switch(CatzConstants.currentMode)
         {
@@ -90,7 +90,7 @@ public class CatzDrivetrain_OT {
         }).start();
     }
 
-    public void cmdProcSwerve(double leftJoyX, double leftJoyY, double rightJoyX, boolean isAutoAlignCubeTrue)
+    public void drivetrainPeriodic()
     {
         for(CatzSwerveModule module : swerveModules)
         {
@@ -98,6 +98,17 @@ public class CatzDrivetrain_OT {
         }
         gyroIO.updateInputs(gyroInputs);
         Logger.getInstance().processInputs("Drive/gyroinputs ", gyroInputs);
+    }
+
+
+    /**********************************************************
+     * 
+     * CMD proc Swerve, determines logic of drivetrain every iteration of "main" looop
+     * Called up in teleop periodic
+     * 
+     **********************************************************/
+    public void cmdProcSwerve(double leftJoyX, double leftJoyY, double rightJoyX, boolean isAutoAlignCubeTrue, boolean isAutoAlignConeTrue)
+    {
 
 
         if(Math.sqrt(Math.pow(leftJoyX,2) + Math.pow(leftJoyY,2)) < 0.1){
@@ -151,9 +162,9 @@ public class CatzDrivetrain_OT {
         }
         else //in full teleop
         {
-            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(leftJoyX * CatzConstants.DriveConstants.MAX_SPEED, 
-                                                                  leftJoyY * CatzConstants.DriveConstants.MAX_SPEED, 
-                                                                  rightJoyX * CatzConstants.DriveConstants.MAX_ANGSPEED, 
+            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(-leftJoyY * CatzConstants.DriveConstants.MAX_SPEED, 
+                                                                  -leftJoyX * CatzConstants.DriveConstants.MAX_SPEED, 
+                                                                  -rightJoyX * CatzConstants.DriveConstants.MAX_ANGSPEED, 
                                                                   getRotation2d());
         }
 
@@ -171,6 +182,10 @@ public class CatzDrivetrain_OT {
     public void setSwerveModuleStates(SwerveModuleState[] states)
     {
         SwerveDriveKinematics.desaturateWheelSpeeds(states, CatzConstants.DriveConstants.MAX_SPEED);
+
+        Logger.getInstance().recordOutput("Drive/module states", states);
+        Logger.getInstance().recordOutput("Drive/state speed pwr", states[0].speedMetersPerSecond);
+        
 
         for(int i = 0; i < 4; i++)
         {
@@ -267,13 +282,14 @@ public class CatzDrivetrain_OT {
       navX.setAngleAdjustment(-navX.getYaw());
     }
 
-    public static CatzDrivetrain_OT getInstance()
+    public static CatzDrivetrain getInstance()
     {
         if(instance == null)
         {
-            instance = new CatzDrivetrain_OT();
+            instance = new CatzDrivetrain();
         }
 
         return instance;
     }
+
 }

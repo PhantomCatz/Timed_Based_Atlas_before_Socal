@@ -155,6 +155,14 @@ public class CatzElevator
         }
     }
 
+    //Called in Robot perioidc to collect all inputs at the START of every "main" loop cycle
+    public void elevatorPerioidic()
+    {
+        io.updateInputs(inputs);
+        Logger.getInstance().processInputs("elevator", inputs);
+        checkLimitSwitches();
+    }
+
 
     /*-----------------------------------------------------------------------------------------
     *  
@@ -280,6 +288,13 @@ public class CatzElevator
         Logger.getInstance().recordOutput("targetEncManual", targetPositionEnc);
 
 
+        //Logging elevator Outputs
+        Logger.getInstance().recordOutput("Elevator/targetEnc", targetPositionEnc);
+        Logger.getInstance().recordOutput("Elevator/highlimitswitch", highSwitchState);
+        Logger.getInstance().recordOutput("Elevator/lowswitchstate", lowSwitchState);
+        Logger.getInstance().recordOutput("Elevator/elevatorInPos", elevatorInPosition);
+
+
        if((DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_ELEVATOR))
         {
           data = new CatzLog(elevatorTime.get(), -999.0,-999.0,//elevatorMtr.getSelectedSensorPosition(), elevatorMtr.getMotorOutputPercent(), 
@@ -379,7 +394,7 @@ public class CatzElevator
             lowSwitchState = false;
         }
 
-        if(inputs.isRevLimitSwitchClosed)
+        if(inputs.isFwdLimitSwitchClosed)
         {
             io.setSelectedSensorPositionIO(POS_ENC_CNTS_HIGH);
             highSwitchState = true;
@@ -398,7 +413,6 @@ public class CatzElevator
 
     public void smartDashboardElevator()
     {
-
         SmartDashboard.putBoolean("Low Limit Switch", lowSwitchState);
         SmartDashboard.putBoolean("High Limit Switch", highSwitchState);
     }

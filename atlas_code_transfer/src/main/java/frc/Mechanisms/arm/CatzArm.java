@@ -101,6 +101,13 @@ public class CatzArm
 
     }
 
+    //collect all arm inputs in robot periodic before any cmd proc units run
+    public void armPeriodic()
+    {
+        io.updateInputs(inputs);
+        Logger.getInstance().processInputs("arm", inputs);
+        checkLimitSwitches();
+    }
 
     /*-----------------------------------------------------------------------------------------
     *  

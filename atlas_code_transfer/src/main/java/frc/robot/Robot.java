@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 
 import frc.DataLogger.CatzLog;
@@ -25,7 +26,7 @@ import frc.Mechanisms.CatzRGB;
 import frc.Mechanisms.ColorMethod;
 import frc.Mechanisms.Odometry.CatzRobotTracker;
 import frc.Mechanisms.arm.CatzArm;
-import frc.Mechanisms.drivetrain.CatzDrivetrain_OT;
+import frc.Mechanisms.drivetrain.CatzDrivetrain;
 import frc.Mechanisms.elevator.CatzElevator;
 import frc.Mechanisms.intake.CatzIntake;
 import frc.Autonomous.*;
@@ -54,7 +55,7 @@ public class Robot extends LoggedRobot
   private final SendableChooser<String> autoChooser = new SendableChooser<>();
   private final SendableChooser<String> sideChooser = new SendableChooser<>();
 
-  public static final CatzDrivetrain_OT drivetrain = CatzDrivetrain_OT.getInstance();
+  public static final CatzDrivetrain drivetrain = CatzDrivetrain.getInstance();
   private final CatzRobotTracker robotTracker = CatzRobotTracker.getInstance();
 
   public static final AutonActionExecutor autonExecutor = AutonActionExecutor.getInstance();
@@ -240,7 +241,7 @@ public class Robot extends LoggedRobot
     {
       // Running on a real robot, log to a USB stick
       case REAL:
-        logger.addDataReceiver(new WPILOGWriter("/media/sda1/"));
+        logger.addDataReceiver(new WPILOGWriter("/media/sda1/Robotdata/"));
         logger.addDataReceiver(new NT4Publisher());
        // new PowerDistribution(1, ModuleType.kRev);
         break;
@@ -312,6 +313,18 @@ public class Robot extends LoggedRobot
   @Override
   public void robotPeriodic()
   {
+    if(DriverStation.isAutonomousEnabled())
+    {
+    //----------------------------------------------------------------------------------------------
+    //  Periodic calls that update the inputs(sensors/motor encoders) for each "main" loop iteration 
+    //----------------------------------------------------------------------------------------------
+    drivetrain.drivetrainPeriodic();
+    elevator.elevatorPerioidic();
+    arm.armPeriodic();
+    //intake.intakePeriodic(); //TBD until intake fixed
+    }
+
+
     //----------------------------------------------------------------------------------------------
     //  Update status, LED's
     //----------------------------------------------------------------------------------------------
@@ -415,7 +428,24 @@ public class Robot extends LoggedRobot
   @Override
   public void teleopPeriodic()
   {
-    drivetrain.cmdProcSwerve(xboxDrv.getLeftX(), xboxDrv.getLeftY(), xboxDrv.getRightX(), (xboxDrv.getLeftTriggerAxis() > 0.5));
+    //----------------------------------------------------------------------------------------------
+    //  Periodic calls that update the inputs(sensors/motor encoders) for each "main" loop iteration 
+    //----------------------------------------------------------------------------------------------
+    drivetrain.drivetrainPeriodic();
+    elevator.elevatorPerioidic();
+    arm.armPeriodic();
+    //intake.intakePeriodic(); //TBD until intake fixed
+
+
+    //DriveTrain Proc
+    /* 
+    drivetrain.cmdProcSwerve(0.0,
+      //xboxDrv.getLeftX(),
+                             xboxDrv.getLeftY(), 
+                             xboxDrv.getRightX(), 
+                             xboxDrv.getLeftTriggerAxis());
+                             */
+
 
     if(xboxDrv.getStartButtonPressed())
     {
@@ -440,13 +470,14 @@ public class Robot extends LoggedRobot
  
     xboxGamePieceSelection(xboxAux.getPOV(),                // Left = Cone, Right = Cube
                            xboxAux.getBackButtonPressed()); // Clear Selected Game Piece
-
-    determineCommandState(xboxLowNode, xboxMidNode, 
-                                       xboxHighNode, 
-                                       xboxStowPos,
-                                       xboxPickUpGroundPos,
-                                       xboxAux.getPOV() == DPAD_DN,
-                                       false);
+        
+    determineCommandState(xboxLowNode, 
+                          xboxMidNode, 
+                          xboxHighNode, 
+                          xboxStowPos,
+                          xboxPickUpGroundPos,
+                          xboxAux.getPOV() == DPAD_DN,
+                          false);
   
                                                   
     elevator.cmdProcElevator(xboxElevatorManualPwr,  // Manual and Manual Hold Elevator Power
@@ -454,11 +485,11 @@ public class Robot extends LoggedRobot
                             commandedStateUpdate);
                             
                             
-
+/* 
     arm.cmdProcArm(xboxAux.getRightTriggerAxis() >= 0.1,   //Manual Extend Arm
                    xboxAux.getLeftTriggerAxis()  >= 0.1,   //Manual Retract Arm 
                    commandedStateUpdate); 
-
+/* 
     intake.cmdProcIntake(-xboxAux.getLeftY(),                   //Semi-manual override TBD value sign switch should be done inside class.
                           xboxAux.getRightBumper() | xboxDrv.getRightBumper(),             //Roller in 
                           xboxAux.getLeftBumper() | xboxDrv.getLeftBumper(),              //Roller out
@@ -466,11 +497,11 @@ public class Robot extends LoggedRobot
                           (xboxAux.getRightBumper() & xboxAux.getLeftBumper()),  //Soft limit override
                           commandedStateUpdate,
                           selectedGamePiece);
-                         
+                         */ //TBD intake not funcrional yet
     commandedStateUpdate = COMMAND_STATE_NULL;
 
 
-
+    Logger.getInstance().recordOutput("Robotjava/elevatormanual", xboxElevatorManualPwr);
     
     // Lock Wheels (Balancing)
     if(xboxDrv.getBButton())
@@ -533,7 +564,13 @@ public class Robot extends LoggedRobot
   @Override
   public void disabledPeriodic()
   {
-
+    //----------------------------------------------------------------------------------------------
+    //  Periodic calls that update the inputs(sensors/motor encoders) for each "main" loop iteration 
+    //----------------------------------------------------------------------------------------------
+    drivetrain.drivetrainPeriodic();
+    elevator.elevatorPerioidic();
+    arm.armPeriodic();
+    //intake.intakePeriodic(); //TBD until intake fixed
   }
 
 

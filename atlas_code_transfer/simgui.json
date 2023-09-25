@@ -1,0 +1,10 @@
+{
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/Alliance Color": "String Chooser",
+      "/SmartDashboard/Auton Path": "String Chooser",
+      "/SmartDashboard/SendableChooser[4]": "String Chooser"
+    }
+  }
+}
