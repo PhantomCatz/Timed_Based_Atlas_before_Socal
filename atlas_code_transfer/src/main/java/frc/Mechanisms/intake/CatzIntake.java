@@ -75,6 +75,7 @@ public class CatzIntake
         }
     
         pid = new PIDController(CatzConstants.IntakeConstants.GROSS_kP, CatzConstants.IntakeConstants.GROSS_kI, CatzConstants.IntakeConstants.GROSS_kD);
+        
         startIntakeThread();
     }
 

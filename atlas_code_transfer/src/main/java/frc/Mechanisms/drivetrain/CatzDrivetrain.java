@@ -11,6 +11,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.Mechanisms.Odometry.CatzVision;
 import frc.robot.CatzConstants;
+import frc.robot.CatzConstants.DriveConstants;
 
 public class CatzDrivetrain {
     private static CatzDrivetrain instance = null;
@@ -45,6 +46,8 @@ public class CatzDrivetrain {
     private double LT_BACK_OFFSET = 0.0455;
     private double RT_BACK_OFFSET = 0.2572;
     private double RT_FRNT_OFFSET = 0.0284;
+
+    private final double NOT_FIELD_RELATIVE = 0.0;
 
     private ChassisSpeeds chassisSpeeds;
 
@@ -119,183 +122,148 @@ public class CatzDrivetrain {
      * Called up in teleop periodic
      * 
      **********************************************************/
-    public void cmdProcSwerveKinematics(double leftJoyX, double leftJoyY, double rightJoyX, boolean isAutoAlignCubeTrue, boolean isAutoAlignConeTrue)
-    {
-        if(Math.sqrt(Math.pow(leftJoyX,2) + Math.pow(leftJoyY,2)) < 0.1){
-            leftJoyX = 0.0;
-            leftJoyY = 0.0;
-        }
-        
-        if(isAutoAlignCubeTrue) //Auto aim for cube nodes using apriltag
-        {
-            double drvPwrXCube;
-            double drvPwrYCube;
-            double turnPwrCube;
-            if(limelightVision.disToTag() > 0.5){
-                drvPwrXCube = 0.2;   
-            }
-            else if(limelightVision.disToTag() < 0.5){
-                drvPwrXCube = -0.2;
-            }
-            else{
-                drvPwrXCube = 0.0;
-            }
-
-            if(limelightVision.disLateralToTargetTag() > 0.1){
-                drvPwrYCube = 0.2;
-            }
-            else if(limelightVision.disLateralToTargetTag() < -0.1){
-                drvPwrYCube = -0.2;
-            }
-            else{
-                drvPwrYCube = 0.0;
-            }
-
+     public void cmdProcSwerve(double leftJoyX, double leftJoyY, double rightJoyX, boolean modifyDrvPwr)
+     {
+         double steerAngle = calcJoystickAngle(leftJoyX, leftJoyY);
+         double drivePower = calcJoystickPower(leftJoyX, leftJoyY);
+         double turnPower  = rightJoyX;
+ 
+         
+         if(drivePower >= 0.1)
+         {
+             
+             if(modifyDrvPwr == true)
+             {
+                 drivePower = drivePower * 0.5;
+             }
+             
+ 
+             if(Math.abs(turnPower) >= 0.1)
+             {
+                 translateTurn(steerAngle, drivePower, turnPower, gyroInputs.gyroAngle);
+             }
+             else
+             {
+                 drive(steerAngle, drivePower, gyroInputs.gyroAngle);
+             }
+ 
+         }
+         else if(Math.abs(turnPower) >= 0.1)
+         {
+             rotateInPlace(turnPower);
             
-            if(limelightVision.angleErrorFromTag() > 0.1) {
-                turnPwrCube = 0.2;
-            }
-            else if(limelightVision.angleErrorFromTag() < -0.1){
-                turnPwrCube = -0.2;
-            }
-            else{
-                turnPwrCube = 0.0;
-            }
-
-            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(drvPwrXCube * CatzConstants.DriveConstants.MAX_SPEED, 
-                                                                  drvPwrYCube * CatzConstants.DriveConstants.MAX_SPEED, 
-                                                                  turnPwrCube * CatzConstants.DriveConstants.MAX_ANGSPEED, 
-                                                                  getRotation2d());
-        }
-        else if(isAutoAlignConeTrue) //Auto aim for cone nodes using nodes + limelight
+         }
+         else
+         {
+             setSteerPower(0.0);
+             setDrivePower(0.0);
+         }
+        Logger.getInstance().recordOutput("steer Angle", steerAngle);
+        Logger.getInstance().recordOutput("drivePwr", drivePower);
+     }
+ 
+     public void drive(double joystickAngle, double joystickPower, double gyroAngle)
+     {
+        for (CatzSwerveModule module : swerveModules)
         {
-            double drvPwrXCone;
-            double drvPwrYCone;
-            double turnPwrCone;
-            if(limelightVision.getDistanceToTarget() > 0.5){
-                drvPwrXCone = 0.2;   
-            }
-            else if(limelightVision.getDistanceToTarget() < 0.5){
-                drvPwrXCone = -0.2;
-            }
-            else{
-                drvPwrXCone = 0.0;
-            }
-
-            if(limelightVision.yErrorOffsetDeg > 0.1){
-                drvPwrYCone = 0.2;
-            }
-            else if(limelightVision.yErrorOffsetDeg < -0.1){
-                drvPwrYCone = -0.2;
-            }
-            else{
-                drvPwrYCone = 0.0;
-            }
-
-            
-            if(limelightVision.angleErrorFromTag() > 0.1) {
-                turnPwrCone = 0.2;
-            }
-            else if(limelightVision.angleErrorFromTag() < -0.1){
-                turnPwrCone = -0.2;
-            }
-            else{
-                turnPwrCone = 0.0;
-            }
-
-            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(drvPwrXCone * CatzConstants.DriveConstants.MAX_SPEED, 
-                                                                  drvPwrYCone * CatzConstants.DriveConstants.MAX_SPEED, 
-                                                                  turnPwrCone * CatzConstants.DriveConstants.MAX_ANGSPEED, 
-                                                                  getRotation2d());
-
-
+            module.setWheelAngle(joystickPower, gyroAngle);
         }
-        else //in full teleop
+ 
+         setDrivePower(joystickPower);
+ 
+     }
+ 
+     public void rotateInPlace(double pwr)
+     {
+         pwr *= 0.8; //reducing turn in place pwer
+         LT_FRNT_MODULE.setWheelAngle(-45.0, NOT_FIELD_RELATIVE);
+         LT_BACK_MODULE.setWheelAngle(45.0, NOT_FIELD_RELATIVE);
+         RT_FRNT_MODULE.setWheelAngle(-135.0, NOT_FIELD_RELATIVE);
+         RT_BACK_MODULE.setWheelAngle(135.0, NOT_FIELD_RELATIVE);
+
+         for(CatzSwerveModule module : swerveModules)
+         {
+             module.setDrivePower(pwr);
+         }
+     }
+ 
+     public void translateTurn(double joystickAngle, double translatePower, double turnPercentage, double gyroAngle)
+     {
+         //how far wheels turn determined by how far joystick is pushed (max of 45 degrees)
+         double turnAngle = turnPercentage * -45.0;
+ 
+         if(Math.abs(closestAngle(joystickAngle, 0.0 - gyroAngle)) <= 45.0)
+         {
+             // if directed towards front of robot
+             LT_FRNT_MODULE.setWheelAngle(joystickAngle + turnAngle, gyroAngle);
+             RT_FRNT_MODULE.setWheelAngle(joystickAngle + turnAngle, gyroAngle);
+ 
+             LT_BACK_MODULE.setWheelAngle(joystickAngle - turnAngle, gyroAngle);
+             RT_BACK_MODULE.setWheelAngle(joystickAngle - turnAngle, gyroAngle);
+         }
+         else if(Math.abs(closestAngle(joystickAngle, 90.0 - gyroAngle)) < 45.0)
+         {
+             // if directed towards left of robot
+             LT_FRNT_MODULE.setWheelAngle(joystickAngle + turnAngle, gyroAngle);
+             LT_BACK_MODULE.setWheelAngle(joystickAngle + turnAngle, gyroAngle);
+ 
+             RT_FRNT_MODULE.setWheelAngle(joystickAngle - turnAngle, gyroAngle);
+             RT_BACK_MODULE.setWheelAngle(joystickAngle - turnAngle, gyroAngle);
+         }
+         else if(Math.abs(closestAngle(joystickAngle, 180.0 - gyroAngle)) <= 45.0)
+         {
+             // if directed towards back of robot
+             LT_BACK_MODULE.setWheelAngle(joystickAngle + turnAngle, gyroAngle);
+             RT_BACK_MODULE.setWheelAngle(joystickAngle + turnAngle, gyroAngle);
+ 
+             LT_FRNT_MODULE.setWheelAngle(joystickAngle - turnAngle, gyroAngle);
+             RT_FRNT_MODULE.setWheelAngle(joystickAngle - turnAngle, gyroAngle);
+         }
+         else if(Math.abs(closestAngle(joystickAngle, -90.0 - gyroAngle)) < 45.0)
+         {
+             // if directed towards right of robot
+             RT_FRNT_MODULE.setWheelAngle(joystickAngle + turnAngle, gyroAngle);
+             RT_BACK_MODULE.setWheelAngle(joystickAngle + turnAngle, gyroAngle);
+ 
+             LT_FRNT_MODULE.setWheelAngle(joystickAngle - turnAngle, gyroAngle);
+             LT_BACK_MODULE.setWheelAngle(joystickAngle - turnAngle, gyroAngle);
+         }
+ 
+         setDrivePower(translatePower);
+ 
+     }
+
+     public void setSteerPower(double pwr)
+     {
+        for(CatzSwerveModule module : swerveModules)
         {
-            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(leftJoyX * CatzConstants.DriveConstants.MAX_SPEED, 
-                                                                  leftJoyY * CatzConstants.DriveConstants.MAX_SPEED, 
-                                                                  rightJoyX * CatzConstants.DriveConstants.MAX_ANGSPEED, 
-                                                                  getRotation2d());
+            module.setSteerPower(pwr);
         }
-
-        Logger.getInstance().recordOutput("Drive/chassis radians",        chassisSpeeds.omegaRadiansPerSecond);
-        Logger.getInstance().recordOutput("Drive/chassis x meters a sec", chassisSpeeds.vxMetersPerSecond);
-        Logger.getInstance().recordOutput("Drive/chassis y meters a sec", chassisSpeeds.vyMetersPerSecond);
-     
-        SwerveModuleState[] moduleStates = CatzConstants.DriveConstants.swerveDriveKinematics.toSwerveModuleStates(chassisSpeeds);
-        
-        setSwerveModuleStates(moduleStates);
-    }//-End of Cmd Proc Swerve
-
-    //inputs SwerveModule sates into each module depending on statenumeber
-    public void setSwerveModuleStates(SwerveModuleState[] states)
-    {
-        SwerveDriveKinematics.desaturateWheelSpeeds(states, CatzConstants.DriveConstants.MAX_SPEED);
-
-        Logger.getInstance().recordOutput("Drive/module states", states);
-        Logger.getInstance().recordOutput("Drive/state speed pwr lt frnt", states[0].speedMetersPerSecond);
-        Logger.getInstance().recordOutput("Drive/state speed pwr lt back", states[1].speedMetersPerSecond);
-        Logger.getInstance().recordOutput("Drive/state speed pwr rt frnt", states[2].speedMetersPerSecond);
-        Logger.getInstance().recordOutput("Drive/state speed pwr rt back", states[3].speedMetersPerSecond);
-        
-
-        for(int i = 0; i < 4; i++)
+     }
+ 
+     public void setDrivePower(double pwr)
+     {
+        for(CatzSwerveModule module : swerveModules)
         {
-            swerveModules[i].setDesiredState(states[i]);
+            module.setDrivePower(pwr);
         }
-    }
-
-
-    /*************************************************************
-     * 
-     * Swerve drive state misc methods
-     * 
-     ***********************************************************/
-    public Rotation2d getRotation2d()
-    {
-        return Rotation2d.fromDegrees(getHeading());
-    }
-
-    public double getHeading() 
-    {
-        return Math.IEEEremainder(getGyroAngle(), 360);
-    }
-
-    public SwerveModuleState[] getModuleStates()
-    {
-        SwerveModuleState[] moduleStates = new SwerveModuleState[4];
-
-        for(int i = 0; i < 4; i++)
+     }
+ 
+     public void setBrakeMode()
+     {
+        for(CatzSwerveModule module : swerveModules)
         {
-            moduleStates[i] = swerveModules[i].getModuleState();
+            module.setBrakeMode();
         }
-
-        return moduleStates;
-    }
-
-    public SwerveModulePosition[] getModulePositions()
-    {
-        SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
-
-        for(int i = 0; i < 4; i++)
+     }
+     public void setCoastMode()
+     {
+        for(CatzSwerveModule module : swerveModules)
         {
-            modulePositions[i] = swerveModules[i].getModulePosition();
+            module.setCoastMode();
         }
-
-        return modulePositions;
-    }
-
-    public void printModulePositions()
-    {
-        SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
-
-        for(int i = 0; i < 4; i++)
-        {
-            modulePositions[i] = swerveModules[i].getModulePosition();
-            System.out.println(modulePositions[i].distanceMeters);
-        }
-    }
-
+     }
+ 
     /*************************************************************
      * 
      * Misc encoder/gyro methods
@@ -331,8 +299,8 @@ public class CatzDrivetrain {
     {
         for(CatzSwerveModule module : swerveModules)
         {
-            module.setPower(0.0);
-            module.setSteeringPower(0.0);
+            module.setDrivePower(0.0);
+            module.setSteerPower(0.0);
         }
     }
     
@@ -362,10 +330,69 @@ public class CatzDrivetrain {
     public void smartDashboardDriveTrain()
     {
         SmartDashboard.putNumber("NavX Gyro Angle", gyroInputs.gyroAngle);
-        LT_FRNT_MODULE.smartDashboardModules();
-        LT_BACK_MODULE.smartDashboardModules();
-        RT_FRNT_MODULE.smartDashboardModules();
-        RT_BACK_MODULE.smartDashboardModules();
+
+        for(CatzSwerveModule module : swerveModules)
+        {
+            module.smartDashboardModules();
+        }
     }    
 
+
+    /**************************
+     * 
+     * Joystick calculations
+     ***************************/
+    public double calcJoystickAngle(double xJoy, double yJoy)
+    {
+        double angle = Math.atan(Math.abs(xJoy) / Math.abs(yJoy));
+        angle *= (180 / Math.PI);
+
+        if(yJoy <= 0)   //joystick pointed up
+        {
+            if(xJoy < 0)    //joystick pointed left
+            {
+              //no change
+            }
+            if(xJoy >= 0)   //joystick pointed right
+            {
+              angle = -angle;
+            }
+        }
+        else    //joystick pointed down
+        {
+            if(xJoy < 0)    //joystick pointed left
+            {
+              angle = 180 - angle;
+            }
+            if(xJoy >= 0)   //joystick pointed right
+            {
+              angle = -180 + angle;
+            }
+        }
+      return angle;
+    }
+
+    public double calcJoystickPower(double xJoy, double yJoy)
+    {
+      return (Math.sqrt(Math.pow(xJoy, 2) + Math.pow(yJoy, 2)));
+    }
+
+    public double closestAngle(double startAngle, double targetAngle)
+    {
+        // get direction
+        double error = targetAngle % 360.0 - startAngle % 360.0;
+
+        // convert from -360 to 360 to -180 to 180
+        if (Math.abs(error) > 180.0)
+        {
+            error = -(Math.signum(error) * 360.0) + error;
+            //closest angle shouldn't be more than 180 degrees. If it is, use other direction
+            if(error > 180.0)
+            {
+                error -= 360;
+            }
+        }
+
+        return error;
+    }
 }

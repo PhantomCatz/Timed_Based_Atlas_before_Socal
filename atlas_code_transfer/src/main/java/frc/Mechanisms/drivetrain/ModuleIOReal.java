@@ -57,6 +57,7 @@ public class ModuleIOReal implements ModuleIO
         inputs.magEncoderValue = magEnc.get();
         inputs.driveMtrOutputPercent = DRIVE_MOTOR.getMotorOutputPercent();
         inputs.magEncDistance = magEnc.getDistance();
+        inputs.steerMotorAppliedOutput = STEER_MOTOR.getAppliedOutput();
     }
 
     @Override

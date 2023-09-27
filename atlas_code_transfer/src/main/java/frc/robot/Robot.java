@@ -379,7 +379,7 @@ public class Robot extends LoggedRobot
     intake.intakePeriodic();
 
     //DriveTrain Proc
-
+    drivetrain.cmdProcSwerve(0.0, xboxDrv.getLeftY()/2, xboxDrv.getRightX(), (xboxDrv.getRightTriggerAxis() > 0.9));
 
     if(xboxDrv.getStartButtonPressed())
     {
@@ -466,7 +466,6 @@ public class Robot extends LoggedRobot
   @Override
   public void disabledInit()
   {
-
 
     
     System.out.println( "intake temp " + intake.intakeWristTemp());
@@ -631,5 +630,6 @@ public class Robot extends LoggedRobot
       currentGamePiece = gamePiece.None;
     }
   }
+  
 
 }

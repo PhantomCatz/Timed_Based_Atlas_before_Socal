@@ -26,7 +26,7 @@ public class CatzRobotTracker extends AbstractMechanism{
     {
         super(THREAD_PERIOD_MS);
         driveTrain.resetDriveEncs();
-        poseEstimator = new SwerveDrivePoseEstimator(CatzConstants.DriveConstants.swerveDriveKinematics, Rotation2d.fromDegrees(180), driveTrain.getModulePositions(), new Pose2d(0,0,Rotation2d.fromDegrees(0)));
+        //poseEstimator = new SwerveDrivePoseEstimator(CatzConstants.DriveConstants.swerveDriveKinematics, Rotation2d.fromDegrees(180), driveTrain.getModulePositions(), new Pose2d(0,0,Rotation2d.fromDegrees(0)));
         super.start();
     }
 
@@ -34,7 +34,7 @@ public class CatzRobotTracker extends AbstractMechanism{
     public void resetPosition(Pose2d pose)
     {
         driveTrain.resetDriveEncs();
-        poseEstimator.resetPosition(Rotation2d.fromDegrees(driveTrain.getGyroAngle()), driveTrain.getModulePositions(), pose);
+        //poseEstimator.resetPosition(Rotation2d.fromDegrees(driveTrain.getGyroAngle()), driveTrain.getModulePositions(), pose);
     }
     //METHOD USED IN AUTONOMOUS CONTAINER
 
@@ -59,7 +59,7 @@ public class CatzRobotTracker extends AbstractMechanism{
         }
 
         //pose updates w/ drivetrain
-        poseEstimator.update(Rotation2d.fromDegrees(driveTrain.getGyroAngle()), driveTrain.getModulePositions());
+        //poseEstimator.update(Rotation2d.fromDegrees(driveTrain.getGyroAngle()), driveTrain.getModulePositions());
 
 
         Logger.getInstance().recordOutput("Odometry/pose", poseEstimator.getEstimatedPosition());

@@ -28,6 +28,13 @@ public class CatzSwerveModule {
     private int index;
     private int steerMotorID;
 
+    private double currentAngle = 0.0;
+    private double angleError = 0.0;
+    private double flippedAngleError = 0.0;
+
+    private double command;
+    public boolean driveDirectionFlipped = false;
+
     public CatzSwerveModule(int driveMotorID, int steerMotorID, int encoderDIOChannel, double wheelOffset,  int index)
     {
 
@@ -63,37 +70,141 @@ public class CatzSwerveModule {
         Logger.getInstance().processInputs("Drive/Module " + Integer.toString(index), inputs);
     }
 
-    public void setDesiredState(SwerveModuleState desiredState) //basically a function made solely for the purpose of following a trajectory. could be used for teleop though.
+    /**
+     * 
+     * Turning logic
+     **/
+    public void setWheelAngle(double target, double gyroAngle)
     {
-        desiredState = SwerveModuleState.optimize(desiredState, getCurrentRotation()); //optimizes wheel rotation so that the furthest a wheel will ever rotate is 90 degrees.
+        currentAngle = ((magEnc.get() - wheelOffset) * 360.0) - gyroAngle;
+        // find closest angle to target angle
+        angleError = closestAngle(currentAngle, target);
 
-        double velocity = Conversions.MPSToFalcon(desiredState.speedMetersPerSecond, CatzConstants.DriveConstants.DRVTRAIN_WHEEL_CIRCUMFERENCE, CatzConstants.DriveConstants.SDS_L2_GEAR_RATIO);
-        io.setDrivePwrVelocityIO(velocity);
+        // find closest angle to target angle + 180
+        flippedAngleError = closestAngle(currentAngle, target + 180.0);
 
-        //double targetAngle = (Math.abs(desiredState.speedMetersPerSecond) <= (CatzConstants.DriveConstants.MAX_SPEED * 0.01)) ? getCurrentRotation().getDegrees() : desiredState.angle.getDegrees(); //Prevent rotating module if speed is less then 1%. Prevents Jittering.
+        // if the closest angle to target is shorter
+        if (Math.abs(angleError) <= Math.abs(flippedAngleError))
+        {
+            driveDirectionFlipped = false;
+            command = steeringPID.calculate(currentAngle, currentAngle + angleError);
+        }
+        // if the closest angle to target + 180 is shorter
+        else
+        {
+            driveDirectionFlipped = true;
+            command = steeringPID.calculate(currentAngle, currentAngle + flippedAngleError);
+        }
 
-        double steerCommand = - steeringPID.calculate(getCurrentRotation().getDegrees(), desiredState.angle.getDegrees());  //negative sign due to xbox translation to numbers in wpilib
-        steerCommand = Math.max(-1.0, Math.min(1.0, steerCommand));
-        io.setSteerPwrIO(steerCommand);
-
-        Logger.getInstance().recordOutput("Drive/targetError"       + Integer.toString(index), (getCurrentRotation().getDegrees() - desiredState.angle.getDegrees()));
-        Logger.getInstance().recordOutput("Drive/targetPosition"    + Integer.toString(index), desiredState.angle.getDegrees());
-        Logger.getInstance().recordOutput("Drive/currentRotation "  + Integer.toString(index), getCurrentRotation().getDegrees());
-        Logger.getInstance().recordOutput("Drive/velocity "         + Integer.toString(index), velocity);
-        Logger.getInstance().recordOutput("Drive/steeringpwr "      + Integer.toString(index), steerCommand);
-        Logger.getInstance().recordOutput("Drive/distanceMeters"    + Integer.toString(index), getModulePosition().distanceMeters);
+        command = -command / (180 * kP); //scale down command to a range of -1 to 1
+        setSteerPower(command);
+        
+        Logger.getInstance().recordOutput("drivetrain/angle error" + Integer.toString(index), angleError);
+        Logger.getInstance().recordOutput("drivetrain/steering cmd pwr" + Integer.toString(index), command);
     }
 
-    public void setPower(double power)
+    public double closestAngle(double startAngle, double targetAngle)
     {
-        io.setDrivePwrPercentIO(power);
+        // get direction
+        double error = targetAngle % 360.0 - startAngle % 360.0;
+
+        // convert from -360 to 360 to -180 to 180
+        if (Math.abs(error) > 180.0)
+        {
+            error = -(Math.signum(error) * 360.0) + error;
+            //closest angle shouldn't be more than 180 degrees. If it is, use other direction
+            if(error > 180.0)
+            {
+                error -= 360;
+            }
+        }
+
+        return error;
     }
 
-    public void setSteeringPower(double speed)
+    public double getEncValue()
+    {
+        return magEnc.get();
+    }
+
+    public double getDrvDistanceRaw()
+    {
+        return inputs.driveMtrSelectedSensorPosition;
+    }
+
+    public double getDrvDistance()
+    {
+        if(driveDirectionFlipped)
+        {
+            return inputs.driveMtrSelectedSensorPosition;
+        }
+        else
+        {
+            return -inputs.driveMtrSelectedSensorPosition;
+        }
+    }
+
+    public void resetDrvDistance()
+    {
+        int i = 0;
+
+        io.setDrvSensorPositionIO(0.0);
+        while(Math.abs(inputs.driveMtrSelectedSensorPosition) > 1.0)
+        {
+            i++;
+            if(i >= 3000)
+            {
+                resetDrvDistance();
+            }
+        }
+    }
+
+    public double getDrvVelocity()
+    {
+        return inputs.driveMtrSelectedSensorVelocity;
+    }
+    
+    public double getAngle()
+    {
+        return inputs.magEncoderValue;//currentAngle
+    }
+
+    public double getWheelAngle()
+    {
+        return (inputs.magEncoderValue - wheelOffset) * 360.0;
+    }
+
+    public double getStrPwr()
+    {
+        return inputs.steerMotorAppliedOutput;
+    }
+
+    public double getError()
+    {
+        return angleError;
+    }
+
+    public double getFlipError()
+    {
+        return flippedAngleError;
+    }
+
+    //individual methods to manually command motors
+    public void setDrivePower(double pwr)
+    {
+        if(driveDirectionFlipped == true)
+        {
+            pwr = -pwr;
+        }
+        io.setDrivePwrPercentIO(-pwr); //reversed to account for the flipped xbox drive cmds
+    }
+
+    public void setSteerPower(double speed)
     {
         io.setSteerPwrIO(speed);
     }
 
+    //mag encoder methods
     public void resetMagEnc()
     {
         io.resetMagEncoderIO();
@@ -109,27 +220,6 @@ public class CatzSwerveModule {
         wheelOffset = inputs.magEncoderValue;
     }
 
-    /**************************
-     * 
-     * @return
-     * Current rotaiton object
-     ***************************/
-    private Rotation2d getCurrentRotation()
-    {
-        return Rotation2d.fromDegrees((inputs.magEncoderValue - wheelOffset)*360);
-    }
-
-    public SwerveModuleState getModuleState()
-    {
-        double velocity = Conversions.falconToMPS(inputs.driveMtrSelectedSensorVelocity , CatzConstants.DriveConstants.DRVTRAIN_WHEEL_CIRCUMFERENCE, CatzConstants.DriveConstants.SDS_L2_GEAR_RATIO);
-        
-        return new SwerveModuleState(velocity, getCurrentRotation());
-    }
-
-    public SwerveModulePosition getModulePosition()
-    {
-        return new SwerveModulePosition(getDriveDistanceMeters(), getCurrentRotation());
-    }
 
     public double getDriveDistanceMeters()
     {
@@ -140,4 +230,19 @@ public class CatzSwerveModule {
     {
         SmartDashboard.putNumber(steerMotorID + " Mag Encoder", magEnc.get() );
     }
+
+
+    public void setBrakeMode()
+    {
+        io.setSteerBrakeModeIO();
+
+    }
+
+
+    public void setCoastMode()
+    {
+        io.setSteerCoastModeIO();
+        //DRIVE_MOTOR.setNeutralMode(NeutralMode.Coast); //REMOVE AFTER TESTING
+    }
+
 }
