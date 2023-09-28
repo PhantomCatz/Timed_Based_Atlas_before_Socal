@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.drive.RobotDriveBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.DataLogger.CatzLog;
 import frc.DataLogger.DataCollection;
+import frc.Mechanisms.drivetrain.CatzDrivetrain;
 import frc.Mechanisms.elevator.CatzElevator;
 import frc.Mechanisms.intake.CatzIntake;
 import frc.robot.*;
@@ -17,6 +18,7 @@ import frc.robot.Robot.mechMode;
 
 public class CatzArm
 {
+    private static CatzElevator elevator = CatzElevator.getIntstance();
     private static CatzArm instance = null;
     private final ArmIO io;
     private final ArmIOInputsAutoLogged  inputs = new ArmIOInputsAutoLogged();
@@ -50,19 +52,19 @@ public class CatzArm
                 io = new ArmIOReal() {};
                 break;
         }
-
+        startArmThread();
     }
 
-        //returns itself for singleton implementation
-        public static CatzArm getInstance()
+    //returns itself for singleton implementation
+    public static CatzArm getInstance()
+    {
+        if(instance == null)
         {
-            if(instance == null)
-            {
-                instance = new CatzArm();
-            }
-    
-            return instance;
+            instance = new CatzArm();
         }
+
+        return instance;
+    }
 
     //collect all arm inputs in robot periodic before any cmd proc units run
     public void armPeriodic()
@@ -80,7 +82,6 @@ public class CatzArm
     public void cmdProcArm(boolean armExtend, boolean armRetract,
                             int cmdUpdateState)
     {
-        checkLimitSwitches();
 
         switch(cmdUpdateState)
         {
@@ -125,7 +126,6 @@ public class CatzArm
             Robot.armControlMode = mechMode.ManualMode;
             setArmPwr(CatzConstants.ArmConstants.EXTEND_PWR);
 
-          
             highExtendProcess = false;
             
         }
@@ -144,50 +144,6 @@ public class CatzArm
             setArmPwr(CatzConstants.ArmConstants.MANUAL_CONTROL_PWR_OFF);
         }
 
-
-
-        //checks if elevator has cleared mid node before extending arm.
-        if(highExtendProcess == true)
-        {
-            elevatorPosition = CatzElevator.getIntstance().getElevatorEncoder();
-
-            if(DriverStation.isAutonomousEnabled() && Robot.selectedGamePiece == Robot.GP_CONE)//TBD explain why we need to wait for intake in autonomous and when we have a cone
-            {
-                if(elevatorPosition >= CatzConstants.ArmConstants.POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR && 
-                   CatzIntake.getInstance().isIntakeInPos())
-                {
-                    io.armSetFullExtendPosIO();
-                    highExtendProcess = false;
-                }
-            }
-            else
-            {
-                if(elevatorPosition >= CatzConstants.ArmConstants.POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR)
-                {
-                    io.armSetFullExtendPosIO();
-                    highExtendProcess = false; 
-                }
-            }
-        }
-
-
-        
-        //tracks the current position of the arm
-        currentPosition = inputs.armMotorEncoder;
-        positionError = currentPosition - targetPosition;
-        if  ((Math.abs(positionError) <= CatzConstants.ArmConstants.ARM_POS_ERROR_THRESHOLD) && targetPosition != CatzConstants.ArmConstants.NO_TARGET_POSITION)
-        {
-            targetPosition = CatzConstants.ArmConstants.NO_TARGET_POSITION;
-            numConsectSamples++;
-                if(numConsectSamples >= 10)
-                {   
-                    armInPosition = true;
-                }
-        }
-        else
-        {
-            numConsectSamples = 0;
-        }
 
 
         //Logging data
@@ -211,6 +167,70 @@ public class CatzArm
         
     }   //End of cmdProcArm()
 
+
+    /****
+     * 
+     *Start arm thread
+     */
+    private void startArmThread()
+    {
+        Thread armThread = new Thread(() ->
+        {
+            while(true)
+            {
+                //checks if elevator has cleared mid node before extending arm.
+                if(highExtendProcess)
+                {
+                    
+                    elevatorPosition = elevator.getElevatorEncoder();
+
+                    if(DriverStation.isAutonomousEnabled() && Robot.selectedGamePiece == Robot.GP_CONE)//TBD explain why we need to wait for intake in autonomous and when we have a cone
+                    {
+                        if(elevatorPosition >= CatzConstants.ArmConstants.POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR && 
+                        CatzIntake.getInstance().isIntakeInPos())
+                        {
+                            io.armSetFullExtendPosIO();
+                            highExtendProcess = false;
+                        }
+                    }
+                    else
+                    {
+                        if(elevatorPosition >= CatzConstants.ArmConstants.POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR)
+                        {
+                            io.armSetFullExtendPosIO();
+                            highExtendProcess = false; 
+                        }
+                    }
+                }
+
+
+
+                
+                //tracks the current position of the arm
+                currentPosition = inputs.armMotorEncoder;
+                positionError = currentPosition - targetPosition;
+                if  ((Math.abs(positionError) <= CatzConstants.ArmConstants.ARM_POS_ERROR_THRESHOLD) && targetPosition != CatzConstants.ArmConstants.NO_TARGET_POSITION)
+                {
+                    targetPosition = CatzConstants.ArmConstants.NO_TARGET_POSITION;
+                    numConsectSamples++;
+                        if(numConsectSamples >= 10)
+                        {   
+                            armInPosition = true;
+                        }
+                }
+                else
+                {
+                    numConsectSamples = 0;
+                }
+                Logger.getInstance().recordOutput("arm/threadtime", Logger.getInstance().getRealTimestamp());
+                Logger.getInstance().recordOutput("arm/elevatorEncoderReading", elevatorPosition);   
+                
+                System.out.println(elevatorPosition); 
+                Timer.delay(0.02);           
+            }
+        });
+        armThread.start();
+    }
 
     /*-----------------------------------------------------------------------------------------
     *  

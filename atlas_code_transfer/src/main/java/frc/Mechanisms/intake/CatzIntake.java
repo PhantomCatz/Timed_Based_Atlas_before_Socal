@@ -352,9 +352,11 @@ public class CatzIntake
                  Logger.getInstance().recordOutput("Intake/threadtime", Logger.getInstance().getRealTimestamp());
                  Logger.getInstance().recordOutput("Intake/targetpower", targetPower);
                  Logger.getInstance().recordOutput("Intake/pidPower", pidPower);
+                 Timer.delay(0.02);    
              }
             }
         });
+        intakeThread.start();
     }
 
 

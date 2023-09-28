@@ -224,7 +224,7 @@ public class Robot extends LoggedRobot
     {
       // Running on a real robot, log to a USB stick
       case REAL:
-        logger.addDataReceiver(new WPILOGWriter("/JavaBook2021/"));
+        logger.addDataReceiver(new WPILOGWriter("/media/sda1/Robotdata"));
         logger.addDataReceiver(new NT4Publisher());
        // new PowerDistribution(1, ModuleType.kRev);
         break;

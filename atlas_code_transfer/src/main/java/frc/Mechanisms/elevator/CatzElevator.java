@@ -53,6 +53,7 @@ public class CatzElevator
                 io = new ElevatorIOReal() {};
                 break;
         }
+        startElevatorThread();
     }
 
     //Called in Robot perioidc to collect all inputs at the START of every "main" loop cycle
@@ -126,17 +127,6 @@ public class CatzElevator
         }
 
 
-        //logic used to determine if arm has cleared it's externion over mid noes
-        if(armRetractProcess)
-        {
-            if (CatzArm.getInstance().getArmEncoder() <= CatzConstants.ElevatorConstants.ELEVATOR_ARM_ENCODER_THRESHOLD)
-            { 
-                elevatorSetToLowPos();
-                armRetractProcess = false;
-            }
-        }
-
-
 
         //Manual Control Logic
         if(manualMode)
@@ -172,24 +162,6 @@ public class CatzElevator
 
 
 
-        //Logic for determining if Elevator has reached target Position
-        currentPosition = inputs.elevatorEncoderCnts;
-        positionError = currentPosition - targetPosition;
-
-        if((Math.abs(positionError) <= CatzConstants.ElevatorConstants.ELEVATOR_POS_ERROR_THRESHOLD) && targetPosition != CatzConstants.ElevatorConstants.NO_TARGET_POSITION)
-        {
-            targetPosition = CatzConstants.ElevatorConstants.NO_TARGET_POSITION;
-            numConsectSamples++;
-                if(numConsectSamples >= 10) //-TBD this hasn;t been working for some mechanisms
-                {   
-                    elevatorInPosition = true;
-                }
-            }
-        else
-        {
-            numConsectSamples = 0;
-        }
-
 
         //Logging elevator Outputs
         Logger.getInstance().recordOutput("Elevator/targetEncManual", targetPositionEnc);
@@ -210,7 +182,45 @@ public class CatzElevator
 
     } //-End of CMd Proc Elevator
 
+    private void startElevatorThread()
+    {
+        Thread elevatorThread = new Thread(() ->
+        {
+            while(true)
+            {
+                //logic used to determine if arm has cleared it's externion over mid noes
+                if(armRetractProcess)
+                {
+                    if (CatzArm.getInstance().getArmEncoder() <= CatzConstants.ElevatorConstants.ELEVATOR_ARM_ENCODER_THRESHOLD)
+                    { 
+                        elevatorSetToLowPos();
+                        armRetractProcess = false;
+                    }
+                }
 
+                //Logic for determining if Elevator has reached target Position
+                currentPosition = inputs.elevatorEncoderCnts;
+                positionError = currentPosition - targetPosition;
+
+                if((Math.abs(positionError) <= CatzConstants.ElevatorConstants.ELEVATOR_POS_ERROR_THRESHOLD) && targetPosition != CatzConstants.ElevatorConstants.NO_TARGET_POSITION)
+                {
+                    targetPosition = CatzConstants.ElevatorConstants.NO_TARGET_POSITION;
+                    numConsectSamples++;
+                        if(numConsectSamples >= 10) //-TBD this hasn;t been working for some mechanisms
+                        {   
+                            elevatorInPosition = true;
+                        }
+                    }
+                else
+                {
+                    numConsectSamples = 0;
+                }
+                Logger.getInstance().recordOutput("elevator/threadtime", Logger.getInstance().getRealTimestamp());
+                Timer.delay(0.02);    
+            }
+        });
+        elevatorThread.start();
+    }
 
 
     
