@@ -277,7 +277,7 @@ public class Robot extends LoggedRobot
   @Override
   public void robotPeriodic() 
   {
-    if(!DriverStation.isTeleopEnabled() || !DriverStation.isAutonomousEnabled())
+    if(!DriverStation.isTeleopEnabled() && !DriverStation.isAutonomousEnabled())
     {
       drivetrain.drivetrainPeriodic();
       elevator.elevatorPeriodic();
