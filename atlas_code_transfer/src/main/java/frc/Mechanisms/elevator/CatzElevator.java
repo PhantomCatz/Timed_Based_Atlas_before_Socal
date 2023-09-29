@@ -237,9 +237,7 @@ public class CatzElevator
     *----------------------------------------------------------------------------------------*/
     public void elevatorSetToLowPos()
     {
-        io.configAllowableClosedloopErrorIO(0, CatzConstants.
-                                                ElevatorConstants.
-                                                 ELEVATOR_CLOSELOOP_ERROR_THRESHOLD_LOW);
+        io.configAllowableClosedloopErrorIO(0, CatzConstants.ElevatorConstants.ELEVATOR_CLOSELOOP_ERROR_THRESHOLD_LOW);
 
 
         io.elevatorConfig_kPIO(0, CatzConstants.ElevatorConstants.ELEVATOR_KP_LOW);
