@@ -125,7 +125,7 @@ public class CatzAutonomous
             if(time > maxTime)
             {
                 done = true;
-                //Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle()); TBD
+                drivetrain.translateTurn(directionDeg, 0.0, 0.0, drivetrain.getGyroAngle()); 
             }
             else
             {
@@ -142,7 +142,7 @@ public class CatzAutonomous
                     angleErrorRate = (angleError - prevAngleError) / (time - prevTime);
                 }
     
-                //deltaPositionCnts   = Robot.drivetrain.LT_FRNT_MODULE.getDrvDistance();
+                deltaPositionCnts   = drivetrain.LT_FRNT_MODULE.getDrvDistance();
                 distanceRemainInch    = distanceInch - (deltaPositionCnts * DRVTRAIN_ENC_COUNTS_TO_INCH);
                 distanceRemainAbsInch = Math.abs(distanceRemainInch);
                 drvPowerDirection     = Math.signum(distanceRemainInch);
@@ -150,7 +150,7 @@ public class CatzAutonomous
                 if(distanceRemainAbsInch <= DRV_S_THRESHOLD_INCH)
                 {
                     done = true;
-                    //Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle()); TBD
+                    drivetrain.translateTurn(directionDeg, 0.0, 0.0, drivetrain.getGyroAngle()); 
                 }
                 else
                 {
@@ -166,7 +166,7 @@ public class CatzAutonomous
                     turnPower *= Math.signum(drvPowerDirection);
                     
 
-                    //Robot.drivetrain.translateTurn(directionDeg, drvPower, turnPower, Robot.drivetrain.getGyroAngle());
+                    drivetrain.translateTurn(directionDeg, drvPower, turnPower, drivetrain.getGyroAngle());
                     prevTime       = time;
                     prevAngleError = angleError;
 
@@ -193,7 +193,7 @@ public class CatzAutonomous
             Timer.delay(DRV_S_THREAD_PERIOD);
         }
 
-       // Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
+       drivetrain.translateTurn(directionDeg, 0.0, 0.0, drivetrain.getGyroAngle());
     }
 
     public void DriveStraightOFFChargeStation(double distanceInch, double directionDeg, double maxTime)
@@ -224,7 +224,7 @@ public class CatzAutonomous
 
         boolean done = false;
 
-        //Robot.drivetrain.LT_FRNT_MODULE.resetDrvDistance();
+        drivetrain.LT_FRNT_MODULE.resetDrvDistance();
         deltaPositionCnts = 0.0;
 
         startingAngle         = drivetrain.getGyroAngle();
@@ -241,7 +241,7 @@ public class CatzAutonomous
             if(time > maxTime)
             {
                 done = true;
-                //Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
+                drivetrain.translateTurn(directionDeg, 0.0, 0.0, drivetrain.getGyroAngle());
             }
             else
             {
@@ -266,7 +266,7 @@ public class CatzAutonomous
                 if(distanceRemainAbsInch <= DRV_S_THRESHOLD_INCH)
                 {
                     done = true;
-                    //Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
+                    drivetrain.translateTurn(directionDeg, 0.0, 0.0, drivetrain.getGyroAngle());
                 }
                 else
                 {
@@ -282,7 +282,7 @@ public class CatzAutonomous
                     turnPower *= Math.signum(drvPowerDirection);
                     
 
-                    //Robot.drivetrain.translateTurn(directionDeg, drvPower, turnPower, Robot.drivetrain.getGyroAngle());
+                    drivetrain.translateTurn(directionDeg, drvPower, turnPower, drivetrain.getGyroAngle());
                     prevTime       = time;
                     prevAngleError = angleError;
 
@@ -309,7 +309,7 @@ public class CatzAutonomous
             Timer.delay(DRV_S_THREAD_PERIOD);
         }
 
-        //Robot.drivetrain.translateTurn(directionDeg, 0.0, 0.0, Robot.drivetrain.getGyroAngle());
+        drivetrain.translateTurn(directionDeg, 0.0, 0.0, drivetrain.getGyroAngle());
     }
 
     /*-----------------------------------------------------------------------------------------

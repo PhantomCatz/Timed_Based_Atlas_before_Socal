@@ -59,7 +59,7 @@ public class CatzDrivetrain {
             gyroIO = new GyroIONavX();
         break;
         default:
-            gyroIO = new GyroIONavX() {}; // TBD does gryo need sim class
+            gyroIO = new GyroIONavX() {};
         break;
         }
 
@@ -262,6 +262,14 @@ public class CatzDrivetrain {
         {
             module.setCoastMode();
         }
+     }
+
+     public void lockWheels()
+     {
+         LT_FRNT_MODULE.setWheelAngle(-45.0, NOT_FIELD_RELATIVE);
+         LT_BACK_MODULE.setWheelAngle(45.0, NOT_FIELD_RELATIVE);
+         RT_FRNT_MODULE.setWheelAngle(-135.0, NOT_FIELD_RELATIVE);
+         RT_BACK_MODULE.setWheelAngle(135.0, NOT_FIELD_RELATIVE);
      }
  
     /*************************************************************

@@ -277,10 +277,10 @@ public class Robot extends LoggedRobot
   @Override
   public void robotPeriodic() 
   {
-    if(!DriverStation.isTeleopEnabled())
+    if(!DriverStation.isTeleopEnabled() || !DriverStation.isAutonomousEnabled())
     {
       drivetrain.drivetrainPeriodic();
-      elevator.elevatorPerioidic();
+      elevator.elevatorPeriodic();
       arm.armPeriodic();
       intake.intakePeriodic();
     }
@@ -332,7 +332,7 @@ public class Robot extends LoggedRobot
     
     Timer.delay(OFFSET_DELAY);  //TBD - This should be 
 
-    //paths.executeSelectedPath(); TBD new autonomous
+    paths.executeSelectedPath(); 
   }
 
   /** This function is called periodically during autonomous. */
@@ -374,7 +374,7 @@ public class Robot extends LoggedRobot
     //  Periodic calls that update the inputs(sensors/motor encoders) for each "main" loop iteration 
     //----------------------------------------------------------------------------------------------
     drivetrain.drivetrainPeriodic();
-    elevator.elevatorPerioidic();
+    elevator.elevatorPeriodic();
     arm.armPeriodic();
     intake.intakePeriodic();
 
@@ -416,13 +416,11 @@ public class Robot extends LoggedRobot
                             xboxElevatorManualMode,  // Enter Manual Mode
                             commandedStateUpdate);
                             
-                            
-
     arm.cmdProcArm(xboxAux.getRightTriggerAxis() >= 0.1,   //Manual Extend Arm
                    xboxAux.getLeftTriggerAxis()  >= 0.1,   //Manual Retract Arm 
                    commandedStateUpdate); 
 
-    intake.cmdProcIntake( xboxAux.getLeftY(),                   //Semi-manual override TBD value sign switch should be done inside class.
+    intake.cmdProcIntake( xboxAux.getLeftY(),                   //Semi-manual override 
                           xboxAux.getRightBumper() | xboxDrv.getRightBumper(),             //Roller in 
                           xboxAux.getLeftBumper() | xboxDrv.getLeftBumper(),              //Roller out
                           xboxAux.getLeftStickButtonPressed(),  //Enter all-manual mode
@@ -438,7 +436,7 @@ public class Robot extends LoggedRobot
     // Lock Wheels (Balancing)
     if(xboxDrv.getBButton())
     {
-      //drivetrain.lockWheels(); TBD
+      drivetrain.lockWheels(); 
     }
 
     /*

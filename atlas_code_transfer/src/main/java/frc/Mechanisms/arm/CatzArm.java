@@ -26,8 +26,6 @@ public class CatzArm
 
     private boolean extendSwitchState = false;
 
-    private boolean highExtendProcess = false;
-
     private double targetPosition = -999.0;
     private double currentPosition = -999.0;
     private double positionError = -999.0; 
@@ -46,13 +44,12 @@ public class CatzArm
                 io = new ArmIOReal();
                 break;
             case SIM :
-                io = null;// new ArmIOSim();
+                io = null;
                 break;
             default:
                 io = new ArmIOReal() {};
                 break;
         }
-        startArmThread();
     }
 
     //returns itself for singleton implementation
@@ -72,6 +69,7 @@ public class CatzArm
         io.updateInputs(inputs);
         Logger.getInstance().processInputs("arm", inputs);
         checkLimitSwitches();
+        armPositionCheck();
     }
 
     /*-----------------------------------------------------------------------------------------
@@ -79,44 +77,39 @@ public class CatzArm
     *  cmdProcArm() called by telop periodic in the "main" loop
     *
     *----------------------------------------------------------------------------------------*/
-    public void cmdProcArm(boolean armExtend, boolean armRetract,
-                            int cmdUpdateState)
+    public void cmdProcArm(boolean armExtend, 
+                           boolean armRetract,
+                           int cmdUpdateState)
     {
-
-        switch(cmdUpdateState)
+        if(cmdUpdateState != Robot.COMMAND_STATE_NULL)
         {
-            case Robot.COMMAND_UPDATE_PICKUP_GROUND_CONE :    
-            case Robot.COMMAND_UPDATE_PICKUP_GROUND_CUBE : 
-            case Robot.COMMAND_UPDATE_PICKUP_SINGLE_CUBE :
-            case Robot.COMMAND_UPDATE_SCORE_LOW_CONE:
-            case Robot.COMMAND_UPDATE_SCORE_LOW_CUBE:
-                highExtendProcess = false;
-                Robot.armControlMode = mechMode.AutoMode;
-                io.armSetPickupPosIO();
-                armInPosition = false;
-                targetPosition = CatzConstants.ArmConstants.POS_ENC_CNTS_PICKUP;
+            armInPosition = false;
+            Robot.armControlMode = mechMode.AutoMode;
+            switch(cmdUpdateState)
+            {
+                case Robot.COMMAND_UPDATE_PICKUP_GROUND_CONE :    
+                case Robot.COMMAND_UPDATE_PICKUP_GROUND_CUBE : 
+                case Robot.COMMAND_UPDATE_PICKUP_SINGLE_CUBE :
+                case Robot.COMMAND_UPDATE_SCORE_LOW_CONE:
+                case Robot.COMMAND_UPDATE_SCORE_LOW_CUBE:
+                    io.armSetPickupPosIO();
+                    targetPosition = CatzConstants.ArmConstants.POS_ENC_CNTS_PICKUP;
+                break;
 
-                
-            break;
+                case Robot.COMMAND_UPDATE_SCORE_HIGH_CONE:
+                case Robot.COMMAND_UPDATE_SCORE_HIGH_CUBE:
+                    elevatorRaiseProcess();
+                    targetPosition = CatzConstants.ArmConstants.POS_ENC_CNTS_EXTEND;
+                break;
 
-            case Robot.COMMAND_UPDATE_SCORE_HIGH_CONE:
-            case Robot.COMMAND_UPDATE_SCORE_HIGH_CUBE:
-                highExtendProcess = true;
-                Robot.armControlMode = mechMode.AutoMode;
-                armInPosition = false;
-                targetPosition = CatzConstants.ArmConstants.POS_ENC_CNTS_EXTEND;
-            break;
-
-            case Robot.COMMAND_UPDATE_STOW           :
-            case Robot.COMMAND_UPDATE_PICKUP_SINGLE_CONE :
-            case Robot.COMMAND_UPDATE_SCORE_MID_CUBE :
-            case Robot.COMMAND_UPDATE_SCORE_MID_CONE :
-                highExtendProcess = false;
-                Robot.armControlMode = mechMode.AutoMode;
-                io.armSetRetractPosIO();
-                armInPosition = false;
-                targetPosition = CatzConstants.ArmConstants.POS_ENC_CNTS_RETRACT;
-            break;
+                case Robot.COMMAND_UPDATE_STOW           :
+                case Robot.COMMAND_UPDATE_PICKUP_SINGLE_CONE :
+                case Robot.COMMAND_UPDATE_SCORE_MID_CUBE :
+                case Robot.COMMAND_UPDATE_SCORE_MID_CONE :
+                    io.armSetRetractPosIO();
+                    targetPosition = CatzConstants.ArmConstants.POS_ENC_CNTS_RETRACT;
+                break;
+            }
         }
 
 
@@ -125,30 +118,22 @@ public class CatzArm
         {
             Robot.armControlMode = mechMode.ManualMode;
             setArmPwr(CatzConstants.ArmConstants.EXTEND_PWR);
-
-            highExtendProcess = false;
             
         }
         else if(armRetract == true)
         {
             Robot.armControlMode = mechMode.ManualMode;
-
-            setArmPwr(CatzConstants.ArmConstants.RETRACT_PWR);
-          
-            highExtendProcess = false;
-
-            
+            setArmPwr(CatzConstants.ArmConstants.RETRACT_PWR);  
         }
         else if(inputs.isArmControlModePercentOutput)
         {
             setArmPwr(CatzConstants.ArmConstants.MANUAL_CONTROL_PWR_OFF);
         }
 
-
-
         //Logging data
         Logger.getInstance().recordOutput("Arm/targetPosition", targetPosition);
         Logger.getInstance().recordOutput("Arm/positionError", positionError);
+        Logger.getInstance().recordOutput("Arm/elevatorEncoderReading", elevator.getElevatorEncoder());
         
 
         if((DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_INTAKE)) 
@@ -172,64 +157,60 @@ public class CatzArm
      * 
      *Start arm thread
      */
-    private void startArmThread()
-    {
-        Thread armThread = new Thread(() ->
+    private void armPositionCheck()
+    {               
+        //tracks the current position of the arm
+        currentPosition = inputs.armMotorEncoder;
+        positionError = currentPosition - targetPosition;
+        if  ((Math.abs(positionError) <= CatzConstants.ArmConstants.ARM_POS_ERROR_THRESHOLD) && targetPosition != CatzConstants.ArmConstants.NO_TARGET_POSITION)
         {
-            while(true)
-            {
-                //checks if elevator has cleared mid node before extending arm.
-                if(highExtendProcess)
-                {
-                    
-                    elevatorPosition = elevator.getElevatorEncoder();
-
-                    if(DriverStation.isAutonomousEnabled() && Robot.selectedGamePiece == Robot.GP_CONE)//TBD explain why we need to wait for intake in autonomous and when we have a cone
-                    {
-                        if(elevatorPosition >= CatzConstants.ArmConstants.POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR && 
-                        CatzIntake.getInstance().isIntakeInPos())
-                        {
-                            io.armSetFullExtendPosIO();
-                            highExtendProcess = false;
-                        }
-                    }
-                    else
-                    {
-                        if(elevatorPosition >= CatzConstants.ArmConstants.POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR)
-                        {
-                            io.armSetFullExtendPosIO();
-                            highExtendProcess = false; 
-                        }
-                    }
+            targetPosition = CatzConstants.ArmConstants.NO_TARGET_POSITION;
+            numConsectSamples++;
+                if(numConsectSamples >= 10)
+                {   
+                    armInPosition = true;
                 }
+        }
+        else
+        {
+            numConsectSamples = 0;
+        }
 
+        Logger.getInstance().recordOutput("arm/threadtime", Logger.getInstance().getRealTimestamp());
+        Logger.getInstance().recordOutput("arm/elevatorEncoderReading", elevatorPosition);   
+    }
 
+    //checks if elevator has cleared mid node before extending arm.
+    private void elevatorRaiseProcess()
+    {
+        Thread elevatorRaiseProcessThread = new Thread(() ->
+        {
+            boolean elevatorRaiseProcessEnabled = true;
+            while(elevatorRaiseProcessEnabled)
+            {
+                elevatorPosition = elevator.getElevatorEncoder();
 
-                
-                //tracks the current position of the arm
-                currentPosition = inputs.armMotorEncoder;
-                positionError = currentPosition - targetPosition;
-                if  ((Math.abs(positionError) <= CatzConstants.ArmConstants.ARM_POS_ERROR_THRESHOLD) && targetPosition != CatzConstants.ArmConstants.NO_TARGET_POSITION)
+                //extra if statment to ensure that when robot has cone in autonomous, the intake is in posiiton first
+                if(DriverStation.isAutonomousEnabled() && Robot.selectedGamePiece == Robot.GP_CONE) 
                 {
-                    targetPosition = CatzConstants.ArmConstants.NO_TARGET_POSITION;
-                    numConsectSamples++;
-                        if(numConsectSamples >= 10)
-                        {   
-                            armInPosition = true;
-                        }
+                    if(elevatorPosition >= CatzConstants.ArmConstants.POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR && 
+                    CatzIntake.getInstance().isIntakeInPos())
+                    {
+                        io.armSetFullExtendPosIO();
+                        elevatorRaiseProcessEnabled = false;
+                    }
                 }
                 else
                 {
-                    numConsectSamples = 0;
+                    if(elevatorPosition >= CatzConstants.ArmConstants.POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR)
+                    {
+                        io.armSetFullExtendPosIO();
+                        elevatorRaiseProcessEnabled = false;
+                    }
                 }
-                Logger.getInstance().recordOutput("arm/threadtime", Logger.getInstance().getRealTimestamp());
-                Logger.getInstance().recordOutput("arm/elevatorEncoderReading", elevatorPosition);   
-                
-                System.out.println(elevatorPosition); 
-                Timer.delay(0.02);           
             }
         });
-        armThread.start();
+        elevatorRaiseProcessThread.start();
     }
 
     /*-----------------------------------------------------------------------------------------
@@ -248,8 +229,6 @@ public class CatzArm
         {
             extendSwitchState = false;
         }
-
-
     }
 
     public void setArmPwr(double pwr)

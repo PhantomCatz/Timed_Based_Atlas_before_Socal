@@ -4,7 +4,7 @@
  * @author Kynam Lenghiem
  * 
  * This class is where reusable constants are defined
- * -TBD should all constants move here?
+ * - should all constants move here?
  ***/
 
 package frc.robot;
@@ -233,7 +233,7 @@ public static final class ElevatorConstants
 
 
     public static final double ELEVATOR_CLOSELOOP_ERROR_THRESHOLD_LOW = 50; 
-    // private final double CLOSELOOP_ERROR_THRESHOLD_HIGH_MID = 300; 
+
     public static final double ELEVATOR_CLOSELOOP_ERROR_THRESHOLD_HIGH_MID = 225; 
 
 
@@ -250,13 +250,13 @@ public static final class ElevatorConstants
       public static final double RETRACT_PWR = -0.2;
   
       //gear ratio
-      public static final double VERSA_RATIO  = 7.0/1.0;
+      private static final double VERSA_RATIO  = 7.0/1.0;
   
-      public static final double PUILEY_1      = 24.0;
-      public static final double PUILEY_2      = 18.0;
-      public static final double PUILEY_RATIO  = PUILEY_1 / PUILEY_2;
+      private static final double PUILEY_1      = 24.0;
+      private static final double PUILEY_2      = 18.0;
+      private static final double PUILEY_RATIO  = PUILEY_1 / PUILEY_2;
        
-      public static final double FINAL_RATIO   = VERSA_RATIO * PUILEY_RATIO;
+      private static final double FINAL_RATIO   = VERSA_RATIO * PUILEY_RATIO;
       public static final double FINAL_CIRCUMFERENCE = 3.54; 
   
   

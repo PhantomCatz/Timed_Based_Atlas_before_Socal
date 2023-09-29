@@ -47,7 +47,7 @@ public class CatzSwerveModule {
                     io = new ModuleIOReal(driveMotorID, steerMotorID, magEnc);
                 break;
             case SIM :
-                    io = null;//new ModuleIOSim(); TBD will we have swerve sim?
+                    io = null; //no sim for swerve
                 break;
             default :
                     io = new ModuleIOReal(driveMotorID, steerMotorID, magEnc) {};

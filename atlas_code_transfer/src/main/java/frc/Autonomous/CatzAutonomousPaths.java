@@ -36,8 +36,6 @@ public class CatzAutonomousPaths
     private final double RIGHT       =   90.0; 
     private final double LEFT        =   -90.0;
 
-    private final double INDEXER_EJECT_TIME = 0.5;  //TBD - Put in Indexer
-
     /*------------------------------------------------------------------------------------
     *  Path ID's
     *-----------------------------------------------------------------------------------*/

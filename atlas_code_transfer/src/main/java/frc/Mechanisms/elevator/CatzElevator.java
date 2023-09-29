@@ -16,6 +16,9 @@ import frc.Mechanisms.arm.CatzArm;
 
 public class CatzElevator
 {
+    private static CatzArm arm = CatzArm.getInstance();
+
+
     private static CatzElevator instance = null;
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged  inputs = new ElevatorIOInputsAutoLogged();
@@ -29,7 +32,6 @@ public class CatzElevator
     public CatzLog data;
     private Timer elevatorTime;
 
-    private boolean armRetractProcess = false;
 
     private double targetPosition = -999.0;
     private double currentPosition = -999.0;
@@ -53,15 +55,16 @@ public class CatzElevator
                 io = new ElevatorIOReal() {};
                 break;
         }
-        startElevatorThread();
+        elevatorPositionCheck();
     }
 
     //Called in Robot perioidc to collect all inputs at the START of every "main" loop cycle
-    public void elevatorPerioidic()
+    public void elevatorPeriodic()
     {
         io.updateInputs(inputs);
         Logger.getInstance().processInputs("elevator", inputs);
         checkLimitSwitches();
+        elevatorPositionCheck();
     }
     
     /*-----------------------------------------------------------------------------------------
@@ -73,70 +76,60 @@ public class CatzElevator
     {
        elevatorPwr = -elevatorPwr; //reverses elevator pwr due to how xbox translates stick movements to numbers between -1 and 1
 
-        switch (cmdUpdateState)
-        {
-            case Robot.COMMAND_UPDATE_PICKUP_GROUND_CONE:
-            case Robot.COMMAND_UPDATE_PICKUP_GROUND_CUBE:
-            case Robot.COMMAND_UPDATE_PICKUP_SINGLE_CUBE:
-            case Robot.COMMAND_UPDATE_SCORE_LOW_CUBE:  
-            case Robot.COMMAND_UPDATE_SCORE_LOW_CONE:
-            case Robot.COMMAND_UPDATE_STOW:
-
-                armRetractProcess = true;
-
-            break;
-
-            case Robot.COMMAND_UPDATE_PICKUP_SINGLE_CONE:
-
-                armRetractProcess = false;
-                elevatorSetToSinglePickup();
-
-                break;
-
-            case Robot.COMMAND_UPDATE_SCORE_MID_CONE:
-         
-                armRetractProcess = false;
-                elevatorSetToMidPosCone();
-            break;
-
-            case Robot.COMMAND_UPDATE_SCORE_MID_CUBE:
-                armRetractProcess = false;
-                elevatorSetToMidPosCube();
-            break;
-
-            case Robot.COMMAND_UPDATE_PICKUP_DOUBLE_CONE:
-            case Robot.COMMAND_UPDATE_PICKUP_DOUBLE_CUBE:
-            case Robot.COMMAND_UPDATE_SCORE_HIGH_CUBE:
-            case Robot.COMMAND_UPDATE_SCORE_HIGH_CONE:
-                armRetractProcess = false;
-                elevatorSetToHighPos();
-            break;
-            
-        
-            case Robot.COMMAND_STATE_NULL:
-            break;
-        }
-        
-
-
         //Logic for when robot is in Automated Cmd State
         if(cmdUpdateState != Robot.COMMAND_STATE_NULL)
         {
             elevatorInManual = false;
             Robot.elevatorControlMode = mechMode.AutoMode;
+            elevatorInPosition = false;
+
+            switch (cmdUpdateState)
+            {
+                case Robot.COMMAND_UPDATE_PICKUP_GROUND_CONE:
+                case Robot.COMMAND_UPDATE_PICKUP_GROUND_CUBE:
+                case Robot.COMMAND_UPDATE_PICKUP_SINGLE_CUBE:
+                case Robot.COMMAND_UPDATE_SCORE_LOW_CUBE:  
+                case Robot.COMMAND_UPDATE_SCORE_LOW_CONE:
+                case Robot.COMMAND_UPDATE_STOW:
+                    armRetractProcess();
+                break;
+
+                case Robot.COMMAND_UPDATE_PICKUP_SINGLE_CONE:
+                    elevatorSetToSinglePickup();
+                    break;
+
+                case Robot.COMMAND_UPDATE_SCORE_MID_CONE:
+                    elevatorSetToMidPosCone();
+                break;
+
+                case Robot.COMMAND_UPDATE_SCORE_MID_CUBE:
+                    elevatorSetToMidPosCube();
+                break;
+
+                case Robot.COMMAND_UPDATE_PICKUP_DOUBLE_CONE:
+                case Robot.COMMAND_UPDATE_PICKUP_DOUBLE_CUBE:
+                case Robot.COMMAND_UPDATE_SCORE_HIGH_CUBE:
+                case Robot.COMMAND_UPDATE_SCORE_HIGH_CONE:
+                    elevatorSetToHighPos();
+                break;
+            }
         }
 
 
 
-        //Manual Control Logic
+        //FullManual Control Logic
         if(manualMode)
         {
             elevatorInManual = true;
         }
+        else if(manualMode && elevatorInManual)
+        {
+            elevatorInManual = false;
+        }
         
+        //Manual Control of Elevator
         if(Math.abs(elevatorPwr) >= CatzConstants.ElevatorConstants.ELEVATOR_MANUAL_CONTROL_DEADBAND)
         {
-            armRetractProcess = false;
             if(elevatorInManual) // Full manual
             {
                 Robot.elevatorControlMode = mechMode.ManualMode;
@@ -166,6 +159,7 @@ public class CatzElevator
         //Logging elevator Outputs
         Logger.getInstance().recordOutput("Elevator/targetEncManual", targetPositionEnc);
         Logger.getInstance().recordOutput("Elevator/elevatorInPos", elevatorInPosition);
+        Logger.getInstance().recordOutput("Elevator/armReadEncoder", arm.getArmEncoder());
 
        if((DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_ELEVATOR))
         {
@@ -182,47 +176,44 @@ public class CatzElevator
 
     } //-End of CMd Proc Elevator
 
-    private void startElevatorThread()
+    private void elevatorPositionCheck()
     {
-        Thread elevatorThread = new Thread(() ->
+        //Logic for determining if Elevator has reached target Position
+        currentPosition = inputs.elevatorEncoderCnts;
+        positionError = currentPosition - targetPosition;
+
+        if((Math.abs(positionError) <= CatzConstants.ElevatorConstants.ELEVATOR_POS_ERROR_THRESHOLD) && targetPosition != CatzConstants.ElevatorConstants.NO_TARGET_POSITION)
         {
-            while(true)
-            {
-                //logic used to determine if arm has cleared it's externion over mid noes
-                if(armRetractProcess)
-                {
-                    if (CatzArm.getInstance().getArmEncoder() <= CatzConstants.ElevatorConstants.ELEVATOR_ARM_ENCODER_THRESHOLD)
-                    { 
-                        elevatorSetToLowPos();
-                        armRetractProcess = false;
-                    }
+            targetPosition = CatzConstants.ElevatorConstants.NO_TARGET_POSITION;
+            numConsectSamples++;
+                if(numConsectSamples >= 10) //-TBD this hasn;t been working for some mechanisms
+                {   
+                    elevatorInPosition = true;
                 }
-
-                //Logic for determining if Elevator has reached target Position
-                currentPosition = inputs.elevatorEncoderCnts;
-                positionError = currentPosition - targetPosition;
-
-                if((Math.abs(positionError) <= CatzConstants.ElevatorConstants.ELEVATOR_POS_ERROR_THRESHOLD) && targetPosition != CatzConstants.ElevatorConstants.NO_TARGET_POSITION)
-                {
-                    targetPosition = CatzConstants.ElevatorConstants.NO_TARGET_POSITION;
-                    numConsectSamples++;
-                        if(numConsectSamples >= 10) //-TBD this hasn;t been working for some mechanisms
-                        {   
-                            elevatorInPosition = true;
-                        }
-                    }
-                else
-                {
-                    numConsectSamples = 0;
-                }
-                Logger.getInstance().recordOutput("elevator/threadtime", Logger.getInstance().getRealTimestamp());
-                Timer.delay(0.02);    
             }
-        });
-        elevatorThread.start();
+        else
+        {
+            numConsectSamples = 0;
+        }
+        Logger.getInstance().recordOutput("elevator/threadtime", Logger.getInstance().getRealTimestamp());
     }
 
-
+    //logic used to determine if arm has cleared it's externion over mid nodes
+    private void armRetractProcess()
+    {
+        Thread armRetractProcessThread = new Thread(() ->
+        {
+            boolean armRetractProcessEnabled = true;
+            while(armRetractProcessEnabled)
+            {
+                if(arm.getArmEncoder() <= CatzConstants.ElevatorConstants.ELEVATOR_ARM_ENCODER_THRESHOLD)
+                {
+                    elevatorSetToLowPos();
+                }
+            }
+        });
+        armRetractProcessThread.start();
+    }
     
 
     /*-----------------------------------------------------------------------------------------
