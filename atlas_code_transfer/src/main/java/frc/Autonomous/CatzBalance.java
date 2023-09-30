@@ -2,6 +2,8 @@ package frc.Autonomous;
 
 import javax.lang.model.util.ElementScanner14;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.DataLogger.CatzLog;
@@ -37,7 +39,7 @@ public class CatzBalance
 
     public CatzBalance()
     {
-        AutoBalance();
+
     }
 
     public double Clamp(double min, double in, double max)
@@ -56,80 +58,64 @@ public class CatzBalance
         }
     }
 
-    public void AutoBalance()
+    public void AutoBalanceLoop()
     {
-        final Thread balanceThread = new Thread()
-        {
-            public void run()
+            
+            if(startBalance)
             {
-                timer.reset();
-                timer.start();
+                time = timer.get();
+
+                balanceAngle = drivetrain.getGyroYaw(); 
+
+                if(prevTime < 0.0)
+                {
+                    angleRate = 0.0;
+                } 
+                else 
+                {
+                    angleRate = (balanceAngle - prevBalanceAngle)/(time - prevTime);
+                }
+
+                // PID without the I
+                angleTerm = balanceAngle * ANG_GAIN;
+                rateTerm = angleRate * RATE_GAIN;
+
+                power = Clamp(-MAX_POWER, angleTerm + rateTerm, MAX_POWER);
+
+                if(Math.abs(power)< 0.07)
+                {
+                    if(power < 0)
+                    {
+                        power = -0.04;
+                    }
+                    else if(power > 0)
+                    {
+                        power = 0.04;
+                    }
+                    
+                    if(Math.abs(balanceAngle) < 2.0)
+                    {
+                        power = 0.0;
+                    }
+                }
+            
+                
+                drivetrain.drive(0.0, -power, 0.0); 
+                prevBalanceAngle = balanceAngle;
+                prevTime = time;
+
+                Logger.getInstance().recordOutput("Autobalance/power", power);
+                Logger.getInstance().recordOutput("Autobalance/balanceAngle", balanceAngle);
+                Logger.getInstance().recordOutput("Autobalance/angleRate", angleRate);
+                Logger.getInstance().recordOutput("Autobalance/rateTerm", rateTerm);
 
                 if(DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_BALANCE)
                 {
-                    data = new CatzLog(ANG_SLOWBAND, ANG_GAIN, RATE_GAIN, MAX_POWER, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0);  
+                    data = new CatzLog(time, balanceAngle, angleRate, power, powerFinal, angleTerm, rateTerm, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0);  
                     Robot.dataCollection.logData.add(data);
                 }
-
-                while(true)
-                {
-                    
-                    if(startBalance)
-                    {
-                        time = timer.get();
-
-                        balanceAngle = drivetrain.getGyroYaw(); 
-
-                        if(prevTime < 0.0)
-                        {
-                            angleRate = 0.0;
-                        } 
-                        else 
-                        {
-                            angleRate = (balanceAngle - prevBalanceAngle)/(time - prevTime);
-                        }
-
-                        // PID without the I
-                        angleTerm = balanceAngle * ANG_GAIN;
-                        rateTerm = angleRate * RATE_GAIN;
-
-                        power = Clamp(-MAX_POWER, angleTerm + rateTerm, MAX_POWER);
-
-                        if(Math.abs(power)< 0.07)
-                        {
-                            if(power < 0)
-                            {
-                                power = -0.04;
-                            }
-                            else if(power > 0)
-                            {
-                                power = 0.04;
-                            }
-                            
-                            if(Math.abs(balanceAngle) < 2.0)
-                            {
-                                power = 0.0;
-                            }
-                        }
-                    
-                        
-                        //Robot.drivetrain.drive(0.0, -power, 0.0); TBD will be added back after trajectory integration 
-                        
-                        prevBalanceAngle = balanceAngle;
-                        prevTime = time;
-
-                        if(DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_BALANCE)
-                        {
-                            data = new CatzLog(time, balanceAngle, angleRate, power, powerFinal, angleTerm, rateTerm, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0);  
-                            Robot.dataCollection.logData.add(data);
-                        }
-                    }
-                    Timer.delay(BALANCE_THREAD_PERIOD);
-                }
             }
-        };
 
-        balanceThread.start();
     }
 
     public void StartBalancing()

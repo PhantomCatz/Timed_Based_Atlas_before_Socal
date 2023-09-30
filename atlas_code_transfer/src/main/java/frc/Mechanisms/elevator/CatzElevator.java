@@ -83,7 +83,7 @@ public class CatzElevator
         Logger.getInstance().processInputs("elevator", inputs);
         checkLimitSwitches();
         elevatorPositionCheck();
-        arm.setElevatorEnc(inputs.elevatorMtrEncoder);
+        arm.setElevatorReadEnc(inputs.elevatorMtrEncoder);
     }
     
     /*-----------------------------------------------------------------------------------------

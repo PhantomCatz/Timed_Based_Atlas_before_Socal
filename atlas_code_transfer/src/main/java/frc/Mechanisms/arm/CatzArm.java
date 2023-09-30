@@ -40,7 +40,7 @@ public class CatzArm
     boolean elevatorRaiseProcessEnabled = false;
     boolean isControlModePercent = false;
 
-    double elevatorEnc;
+    double elevatorReadEnc;
 
 
 
@@ -214,7 +214,7 @@ public class CatzArm
         //extra if statment to ensure that when robot has cone in autonomous, the intake is in posiiton first
         if(DriverStation.isAutonomousEnabled() && Robot.selectedGamePiece == Robot.GP_CONE) 
         {
-            if((elevatorEnc * 10 >= ElevatorConstants.ELEVATOR_ARM_ENCODER_THRESHOLD) && 
+            if((elevatorReadEnc >= ElevatorConstants.ELEVATOR_ARM_ENCODER_THRESHOLD) && 
             CatzIntake.getInstance().isIntakeInPos())
             {
                 io.setArmPosIO(CatzConstants.ArmConstants.POS_ENC_CNTS_EXTEND);
@@ -222,12 +222,11 @@ public class CatzArm
         }
         else
         {
-            if((elevatorEnc * 10 >= ElevatorConstants.ELEVATOR_ARM_ENCODER_THRESHOLD))
+            if((elevatorReadEnc >= ElevatorConstants.ELEVATOR_ARM_ENCODER_THRESHOLD))
             {
                 io.setArmPosIO(CatzConstants.ArmConstants.POS_ENC_CNTS_EXTEND);          
             }
         }
-        System.out.println(elevatorEnc);
 
                 
     }
@@ -275,8 +274,8 @@ public class CatzArm
         return armInPosition;
     }
 
-    public void setElevatorEnc(double recievedEnc)
+    public void setElevatorReadEnc(double recievedElevatorEnc)
     {
-        elevatorEnc = recievedEnc;
+        elevatorReadEnc = 10 * recievedElevatorEnc;
     }
 }

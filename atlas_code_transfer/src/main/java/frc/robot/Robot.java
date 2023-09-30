@@ -285,6 +285,11 @@ public class Robot extends LoggedRobot
       intake.intakePeriodic();
     }
 
+    if(DriverStation.isAutonomousEnabled())
+    {
+      balance.AutoBalanceLoop();
+    }
+
 
     //----------------------------------------------------------------------------------------------
     //  Update status, LED's

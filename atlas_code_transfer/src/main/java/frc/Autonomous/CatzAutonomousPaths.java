@@ -190,12 +190,7 @@ public class CatzAutonomousPaths
 
     public void testPath()
     {
-        //Robot.auton.DriveStraightONChargeStationFromBack(-120, FWD_OR_BWD, 4.0); 
-        // Timer.delay(0.5);
-        //Balance();
-        pickUpCube();
-        Robot.auton.DriveStraight(36.0, FWD_OR_BWD, 5.0);
-        stow();
+        Balance();
     }
 
 
@@ -292,7 +287,7 @@ public class CatzAutonomousPaths
         SidePickup();
         scoreCubeHigh();
     }
-/*
+/* 
     public void LeftScore1Balance()
     {
         double direction;
@@ -336,7 +331,8 @@ public class CatzAutonomousPaths
         Balance();
 
     }
-*/
+    */
+
     public void centerMobilityBalance() 
     {
         Robot.auton.DriveStraightOFFChargeStation(170, FWD_OR_BWD, 4.0);
