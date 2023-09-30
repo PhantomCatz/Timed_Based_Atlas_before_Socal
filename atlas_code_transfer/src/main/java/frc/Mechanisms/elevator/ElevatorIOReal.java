@@ -24,7 +24,6 @@ public class ElevatorIOReal implements ElevatorIO
     private final double MANUAL_CONTROL_PWR_OFF = 0.0;
   
   
-  
     //current limiting
     private SupplyCurrentLimitConfiguration elevatorCurrentLimit;
     private final int     CURRENT_LIMIT_AMPS            = 55;
@@ -43,6 +42,8 @@ public class ElevatorIOReal implements ElevatorIO
   
     private final boolean LIMIT_SWITCH_IGNORED   = false;
     private final boolean LIMIT_SWITCH_MONITORED = true;  // limit switches will shut off the motor
+
+    private double realElevatorEncoder;
   
   
 
@@ -85,7 +86,7 @@ public class ElevatorIOReal implements ElevatorIO
     @Override
     public void updateInputs(ElevatorIOInputs inputs)
     {
-        inputs.elevatorEncoderCnts = elevatorMtr.getSelectedSensorPosition();
+        inputs.elevatorMtrEncoder = elevatorMtr.getSelectedSensorPosition();
         inputs.isRevLimitSwitchClosed = (elevatorMtr.getSensorCollection().isRevLimitSwitchClosed() == SWITCH_CLOSED);
         inputs.isFwdLimitSwitchClosed = (elevatorMtr.getSensorCollection().isFwdLimitSwitchClosed() == SWITCH_CLOSED);
         inputs.elevatorMotorPercentOutput = elevatorMtr.getMotorOutputPercent();
@@ -131,7 +132,13 @@ public class ElevatorIOReal implements ElevatorIO
     public void setSelectedSensorPositionIO(double setNewReadPosition) 
     {
         elevatorMtr.setSelectedSensorPosition(setNewReadPosition);
-    }   
+    }  
+    
+    @Override
+    public void updateRealElevatorencoder(realElevatorEncoder encoder) 
+    {
+        encoder.realElevatorEncoderValue = elevatorMtr.getSelectedSensorPosition();
+    }
 
  
 }

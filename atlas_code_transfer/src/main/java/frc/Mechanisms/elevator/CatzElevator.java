@@ -4,6 +4,8 @@ import frc.robot.CatzConstants;
 import frc.robot.Robot;
 import frc.robot.Robot.mechMode;
 
+import javax.net.ssl.TrustManager;
+
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -11,6 +13,7 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.DataLogger.CatzLog;
 import frc.DataLogger.DataCollection;
 import frc.Mechanisms.arm.CatzArm;
+import frc.Mechanisms.elevator.ElevatorIO.realElevatorEncoder;
 
 
 
@@ -22,6 +25,7 @@ public class CatzElevator
     private static CatzElevator instance = null;
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged  inputs = new ElevatorIOInputsAutoLogged();
+    private final realElevatorEncoder encoderValue = new realElevatorEncoder();
 
     private boolean elevatorInManual = false;
     private double targetPositionEnc;
@@ -41,6 +45,9 @@ public class CatzElevator
 
     private int numConsectSamples = 0;
 
+    private boolean armRaiseProcess = false;
+
+
     private CatzElevator()
     {
         switch(CatzConstants.currentMode)
@@ -58,6 +65,17 @@ public class CatzElevator
         elevatorPositionCheck();
     }
 
+    //returns itself for singleton implementation
+    public static CatzElevator getIntstance()
+    {
+        if(instance == null)
+        {
+            instance = new CatzElevator();
+        }
+
+        return instance;
+    }
+
     //Called in Robot perioidc to collect all inputs at the START of every "main" loop cycle
     public void elevatorPeriodic()
     {
@@ -65,6 +83,7 @@ public class CatzElevator
         Logger.getInstance().processInputs("elevator", inputs);
         checkLimitSwitches();
         elevatorPositionCheck();
+        arm.setElevatorEnc(inputs.elevatorMtrEncoder);
     }
     
     /*-----------------------------------------------------------------------------------------
@@ -91,7 +110,7 @@ public class CatzElevator
                 case Robot.COMMAND_UPDATE_SCORE_LOW_CUBE:  
                 case Robot.COMMAND_UPDATE_SCORE_LOW_CONE:
                 case Robot.COMMAND_UPDATE_STOW:
-                    armRetractProcess();
+                    armRaiseProcess = true;
                 break;
 
                 case Robot.COMMAND_UPDATE_PICKUP_SINGLE_CONE:
@@ -113,6 +132,22 @@ public class CatzElevator
                     elevatorSetToHighPos();
                 break;
             }
+        }
+
+        //logic for determining if we are in the arm raise process
+        if(armRaiseProcess)
+        {
+            armRetractProcess();
+        }
+
+        if((cmdUpdateState != Robot.COMMAND_UPDATE_PICKUP_GROUND_CONE ||
+            cmdUpdateState != Robot.COMMAND_UPDATE_PICKUP_GROUND_CUBE ||
+            cmdUpdateState != Robot.COMMAND_UPDATE_PICKUP_SINGLE_CUBE ||
+            cmdUpdateState != Robot.COMMAND_UPDATE_SCORE_LOW_CUBE ||
+            cmdUpdateState != Robot.COMMAND_UPDATE_SCORE_LOW_CONE ||
+            cmdUpdateState != Robot.COMMAND_UPDATE_STOW) && cmdUpdateState != Robot.COMMAND_STATE_NULL)
+        {
+            armRaiseProcess = false;
         }
 
 
@@ -140,7 +175,7 @@ public class CatzElevator
             {
                 Robot.elevatorControlMode = mechMode.ManualHoldMode;
 
-                targetPositionEnc = inputs.elevatorEncoderCnts;
+                targetPositionEnc = inputs.elevatorMtrEncoder;
                 targetPositionEnc = targetPositionEnc + (elevatorPwr * CatzConstants.ElevatorConstants.ELEVATOR_MANUAL_HOLD_STEP_SIZE);
                 io.elevatorMtrSetPosIO(targetPositionEnc);
             }
@@ -160,6 +195,7 @@ public class CatzElevator
         Logger.getInstance().recordOutput("Elevator/targetEncManual", targetPositionEnc);
         Logger.getInstance().recordOutput("Elevator/elevatorInPos", elevatorInPosition);
         Logger.getInstance().recordOutput("Elevator/armReadEncoder", arm.getArmEncoder());
+        Logger.getInstance().recordOutput("ElevatorGetMethod", getElevatorEncoder());
 
        if((DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_ELEVATOR))
         {
@@ -179,7 +215,7 @@ public class CatzElevator
     private void elevatorPositionCheck()
     {
         //Logic for determining if Elevator has reached target Position
-        currentPosition = inputs.elevatorEncoderCnts;
+        currentPosition = inputs.elevatorMtrEncoder;
         positionError = currentPosition - targetPosition;
 
         if((Math.abs(positionError) <= CatzConstants.ElevatorConstants.ELEVATOR_POS_ERROR_THRESHOLD) && targetPosition != CatzConstants.ElevatorConstants.NO_TARGET_POSITION)
@@ -195,24 +231,16 @@ public class CatzElevator
         {
             numConsectSamples = 0;
         }
-        Logger.getInstance().recordOutput("elevator/threadtime", Logger.getInstance().getRealTimestamp());
+        Logger.getInstance().recordOutput("Elevator/threadtime", Logger.getInstance().getRealTimestamp());
     }
 
     //logic used to determine if arm has cleared it's externion over mid nodes
     private void armRetractProcess()
     {
-        Thread armRetractProcessThread = new Thread(() ->
+        if(arm.getArmEncoder() <= CatzConstants.ElevatorConstants.ELEVATOR_ARM_ENCODER_THRESHOLD)
         {
-            boolean armRetractProcessEnabled = true;
-            while(armRetractProcessEnabled)
-            {
-                if(arm.getArmEncoder() <= CatzConstants.ElevatorConstants.ELEVATOR_ARM_ENCODER_THRESHOLD)
-                {
-                    elevatorSetToLowPos();
-                }
-            }
-        });
-        armRetractProcessThread.start();
+            elevatorSetToLowPos();
+        }
     }
     
 
@@ -326,7 +354,13 @@ public class CatzElevator
     *----------------------------------------------------------------------------------------*/
     public double getElevatorEncoder()
     {
-        return inputs.elevatorEncoderCnts;
+        return inputs.elevatorMtrEncoder;
+    }
+
+    public double getRealElevatorEncoder()
+    {
+        io.updateRealElevatorencoder(encoderValue);
+        return encoderValue.realElevatorEncoderValue;
     }
 
     public void smartDashboardElevator()
@@ -338,7 +372,7 @@ public class CatzElevator
 
     public void smartDashboardElevator_DEBUG()
     {
-        SmartDashboard.putNumber("Elevator Enc Pos", inputs.elevatorEncoderCnts);
+        SmartDashboard.putNumber("Elevator Enc Pos", inputs.elevatorMtrEncoder);
         //SmartDashboard.putNumber("Elev Closed Loop Error", elevatorMtr.getClosedLoopError());
     }
 
@@ -347,15 +381,16 @@ public class CatzElevator
         return elevatorInPosition;
     }
 
-    //returns itself for singleton implementation
-    public static CatzElevator getIntstance()
+    public boolean isElevatorClearedThreshold()
     {
-        if(instance == null)
+        if(inputs.elevatorMtrEncoder >= CatzConstants.ElevatorConstants.ELEVATOR_ARM_ENCODER_THRESHOLD)
         {
-            instance = new CatzElevator();
+            return true;
         }
-
-        return instance;
+        else
+        {
+            return false;
+        }
     }
       
 }

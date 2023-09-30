@@ -39,6 +39,8 @@ public class CatzIntake
 
     private int numConsectSamples = 0;
 
+    private boolean scoreLowConeLogicEnabled = false;
+
 
 
     //private double wristAngle;
@@ -185,7 +187,7 @@ public class CatzIntake
                     break;
                     
                 case Robot.COMMAND_UPDATE_SCORE_LOW_CONE :
-                    scoreLowConeLogic();
+                    scoreLowConeLogicEnabled = true;
                     break;
     
                 case Robot.COMMAND_UPDATE_SCORE_LOW_CUBE :
@@ -209,6 +211,18 @@ public class CatzIntake
             }
         }
         
+        //Logic for determining if we are currently trying to scroe a low cone
+        if(scoreLowConeLogicEnabled)
+        {
+            scoreLowConeLogic();
+        }
+
+        if(CmdStateUpdate != Robot.COMMAND_UPDATE_SCORE_LOW_CONE && 
+           CmdStateUpdate != Robot.COMMAND_STATE_NULL)
+        {
+            scoreLowConeLogicEnabled = false;
+        }
+
         if(pidEnable)
         {
             intakePIDLoop();
@@ -367,19 +381,12 @@ public class CatzIntake
      */
     public void scoreLowConeLogic()
     {
-        Thread scoreLowConeThread = new Thread(() ->
+        if(arm.getArmEncoder() > CatzConstants.ArmConstants.POS_ENC_CNTS_PICKUP)
         {
-            boolean scoreLowConeLogicEnabled = true;
-            while(scoreLowConeLogicEnabled)
-            {
-                if(arm.getArmEncoder() > CatzConstants.ArmConstants.POS_ENC_CNTS_PICKUP)
-                {
-                    targetPositionDeg = CatzConstants.IntakeConstants.INTAKE_CONE_ENC_POS_GROUND;
-                    scoreLowConeLogicEnabled = false;
-                }
-            }
-        });
-        scoreLowConeThread.start();
+            targetPositionDeg = CatzConstants.IntakeConstants.INTAKE_CONE_ENC_POS_GROUND;
+            scoreLowConeLogicEnabled = false;
+        }
+
     }
 
     /*----------------------------------------------------------------------------------------------

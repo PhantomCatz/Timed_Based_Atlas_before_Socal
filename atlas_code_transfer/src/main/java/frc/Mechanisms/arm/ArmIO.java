@@ -2,6 +2,8 @@ package frc.Mechanisms.arm;
 
 import org.littletonrobotics.junction.AutoLog;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+
 public interface ArmIO 
 {
     @AutoLog
@@ -11,6 +13,7 @@ public interface ArmIO
         public boolean isRevLimitSwitchClosed;
         public boolean isArmControlModePercentOutput;
         public double armPercentOutput;
+        public ControlMode controlMode;
     }
 
     public default void updateInputs(ArmIOInputs inputs) {}
@@ -19,12 +22,7 @@ public interface ArmIO
 
     public default void setArmPwrIO(double pwr) {}
 
-    
-    public default void armSetFullExtendPosIO() {}
+    public default void setArmPosIO(double position) {}
 
-    
-    public default void armSetRetractPosIO() {}
-
-    
-    public default void armSetPickupPosIO() {}
+    public default void setControlMode(ControlMode set) {}
 }

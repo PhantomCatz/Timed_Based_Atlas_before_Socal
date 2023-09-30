@@ -140,7 +140,7 @@ public final class CatzConstants {
     public static final double SOFT_LIMIT_FORWARD = 0.0; //4876  + WRIST_ABS_ENC_OFFSET;  //3887
     public static final double SOFT_LIMIT_REVERSE = -8900.0; //-798.0 + WRIST_ABS_ENC_OFFSET; //-1787     //TBD
 
-    public static final double GROSS_kP = 0.002472;//0.00009; 
+    public static final double GROSS_kP = 0.002472;//0.00009; //lc
     public static final double GROSS_kI = 0.0;//000040;
     public static final double GROSS_kD = 0.000291;//0.000007;
 
@@ -219,7 +219,7 @@ public static final class ElevatorConstants
     public static final double ELEVATOR_KI_LOW = 0.0002;
     public static final double ELEVATOR_KD_LOW = 0.001;
 
-    public static final double ELEVATOR_KP_MID = 0.080;
+    public static final double ELEVATOR_KP_MID = 0.078;//lc
     public static final double ELEVATOR_KI_MID = 0.0002;
     public static final double ELEVATOR_KD_MID = 0.001;
 
@@ -234,7 +234,7 @@ public static final class ElevatorConstants
 
     public static final double ELEVATOR_CLOSELOOP_ERROR_THRESHOLD_LOW = 50; 
 
-    public static final double ELEVATOR_CLOSELOOP_ERROR_THRESHOLD_HIGH_MID = 225; 
+    public static final double ELEVATOR_CLOSELOOP_ERROR_THRESHOLD_HIGH_MID = 225; //lc
 
 
     public static final double ELEVATOR_POS_ERROR_THRESHOLD = 1000.0; //0.424 inches
@@ -271,9 +271,9 @@ public static final class ElevatorConstants
       public static final double POS_ENC_INCH_EXTEND = 8.157;
       public static final double POS_ENC_INCH_PICKUP = 4.157;
   
-      public static final double POS_ENC_CNTS_RETRACT  = POS_ENC_INCH_RETRACT * CNTS_PER_INCH_CONVERSION_FACTOR;
-      public static final double POS_ENC_CNTS_EXTEND  = POS_ENC_INCH_EXTEND * CNTS_PER_INCH_CONVERSION_FACTOR; //TBD we should continue with cnts per inch 
-      public static final double POS_ENC_CNTS_PICKUP = POS_ENC_INCH_PICKUP * CNTS_PER_INCH_CONVERSION_FACTOR;
+      public static final double POS_ENC_CNTS_RETRACT  = 10 * POS_ENC_INCH_RETRACT * CNTS_PER_INCH_CONVERSION_FACTOR;
+      public static final double POS_ENC_CNTS_EXTEND  = 10 * POS_ENC_INCH_EXTEND * CNTS_PER_INCH_CONVERSION_FACTOR; //TBD we should continue with cnts per inch 
+      public static final double POS_ENC_CNTS_PICKUP = 10 * POS_ENC_INCH_PICKUP * CNTS_PER_INCH_CONVERSION_FACTOR;
   
       public static final double POS_ENC_CNTS_HIGH_EXTEND_THRESHOLD_ELEVATOR = 73000.0;
   

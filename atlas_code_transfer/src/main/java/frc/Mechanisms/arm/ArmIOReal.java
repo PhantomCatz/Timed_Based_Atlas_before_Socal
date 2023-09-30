@@ -7,6 +7,7 @@ import com.revrobotics.CANSparkMax;
 import frc.robot.CatzConstants;
 import frc.robot.Robot;
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -75,8 +76,9 @@ public class ArmIOReal implements ArmIO
     {
         inputs.armMotorEncoder        = armMtr.getSelectedSensorPosition();
         inputs.isRevLimitSwitchClosed = (armMtr.getSensorCollection().isRevLimitSwitchClosed() == SWITCH_CLOSED);
-        inputs.isArmControlModePercentOutput  = (ControlMode.PercentOutput == armMtr.getControlMode());
+        inputs.isArmControlModePercentOutput  = (armMtr.getControlMode() == ControlMode.PercentOutput);
         inputs.armPercentOutput       = armMtr.getMotorOutputPercent(); 
+        inputs.controlMode                = armMtr.getControlMode();
     }
     @Override
     public void setSelectedSensorPositionIO(double encoderResetPos) 
@@ -91,22 +93,11 @@ public class ArmIOReal implements ArmIO
     }
 
     @Override
-    public void armSetFullExtendPosIO()
+    public void setArmPosIO(double position) 
     {
-        armMtr.set(ControlMode.Position, CatzConstants.ArmConstants.POS_ENC_CNTS_EXTEND);
+        armMtr.set(ControlMode.Position, position);
     }
 
-    @Override
-    public void armSetRetractPosIO()
-    {
-        armMtr.set(ControlMode.Position, CatzConstants.ArmConstants.POS_ENC_CNTS_RETRACT);
-    }
-
-    @Override
-    public void armSetPickupPosIO()
-    {
-        armMtr.set(ControlMode.Position, CatzConstants.ArmConstants.POS_ENC_CNTS_PICKUP);
-    }
 
 
 }

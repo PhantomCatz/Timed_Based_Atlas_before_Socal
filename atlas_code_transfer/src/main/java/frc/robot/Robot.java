@@ -629,5 +629,9 @@ public class Robot extends LoggedRobot
     }
   }
   
+    public static double getElevatorEncoderReal()
+    {
+      return elevator.getElevatorEncoder();
+    }
 
 }

@@ -7,11 +7,16 @@ public interface ElevatorIO
     @AutoLog
     public class ElevatorIOInputs
     {
-        public double elevatorEncoderCnts = 0.0;
+        public double elevatorMtrEncoder;
         public boolean isRevLimitSwitchClosed;
         public boolean isFwdLimitSwitchClosed;
-        public double elevatorMotorPercentOutput = 0.0;
-        public double elevatorCloseLoopError = 0.0;
+        public double elevatorMotorPercentOutput;
+        public double elevatorCloseLoopError;
+    }
+
+    public class realElevatorEncoder
+    {
+        double realElevatorEncoderValue;
     }
 
     public default void updateInputs(ElevatorIOInputs inputsIO) {}
@@ -29,6 +34,8 @@ public interface ElevatorIO
     public default void configAllowableClosedloopErrorIO(int slotID, double closeloopErrorThreshold) {}
 
     public default void setSelectedSensorPositionIO(double setNewReadPosition) {}
+
+    public default void updateRealElevatorencoder(realElevatorEncoder encoder) {}
 
 
 
