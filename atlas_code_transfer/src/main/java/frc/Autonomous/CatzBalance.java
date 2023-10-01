@@ -60,7 +60,6 @@ public class CatzBalance
 
     public void AutoBalanceLoop()
     {
-            
             if(startBalance)
             {
                 time = timer.get();

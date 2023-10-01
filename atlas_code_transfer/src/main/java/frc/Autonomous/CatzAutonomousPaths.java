@@ -437,6 +437,7 @@ public class CatzAutonomousPaths
 
     public void setCommandStateAuton(int cmdState, int gamePiece)
     {
+        
         int timeout = 0;
         boolean done = false;
 
@@ -446,22 +447,26 @@ public class CatzAutonomousPaths
 
         Robot.selectedGamePiece = gamePiece;
 
-        elevator.cmdProcElevator(0.0,   false, cmdState);
-        arm.cmdProcArm          (false, false, cmdState);
-
-        if(cmdState == Robot.COMMAND_UPDATE_STOW)
-        {
-            intake.cmdProcIntake(0.0, false, true, false, false, cmdState, gamePiece);
-        }
-        else
-        {
-            intake.cmdProcIntake(0.0, false, false, false, false, cmdState, gamePiece);
-        }
-
         if(cmdState != Robot.COMMAND_UPDATE_STOW)
         {
             while(!done)
             {
+                CatzArm.getInstance().armPeriodic();
+                CatzElevator.getIntstance().elevatorPeriodic();
+                CatzIntake.getInstance().intakePeriodic();
+                
+                elevator.cmdProcElevator(0.0,   false, cmdState);
+                arm.cmdProcArm          (false, false, cmdState);
+        
+                if(cmdState == Robot.COMMAND_UPDATE_STOW)
+                {
+                    intake.cmdProcIntake(0.0, false, true, false, false, cmdState, gamePiece);
+                }
+                else
+                {
+                    intake.cmdProcIntake(0.0, false, false, false, false, cmdState, gamePiece);
+                }
+
                 elevatorInPos = elevator.isElevatorInPos();
                 armInPos      = arm.isArmInPos();
                 intakeInPos   = intake.isIntakeInPos();
@@ -485,7 +490,7 @@ public class CatzAutonomousPaths
                                        );
                 }
 
-                Timer.delay(0.010);
+                Timer.delay(0.020);
             }
         }
     }

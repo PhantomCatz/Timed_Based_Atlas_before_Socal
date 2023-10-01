@@ -3,6 +3,7 @@ package frc.Mechanisms.intake;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.CatzConstants;
@@ -283,6 +284,11 @@ public class CatzIntake
         {
             while(true)
             {
+                if(DriverStation.isAutonomousEnabled())
+                {
+                    intakePeriodic();
+                }
+
                 if(pidEnable)
                 {
                     //----------------------------------------------------------------------------------

@@ -339,7 +339,7 @@ public class Robot extends LoggedRobot
     
     Timer.delay(OFFSET_DELAY);  //TBD - This should be 
 
-    paths.executeSelectedPath(); 
+    paths.executeSelectedPath();
   }
 
   /** This function is called periodically during autonomous. */

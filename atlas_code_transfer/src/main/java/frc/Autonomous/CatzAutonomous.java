@@ -3,7 +3,10 @@ package frc.Autonomous;
 import edu.wpi.first.wpilibj.Timer;
 import frc.DataLogger.CatzLog;
 import frc.DataLogger.DataCollection;
+import frc.Mechanisms.arm.CatzArm;
 import frc.Mechanisms.drivetrain.CatzDrivetrain;
+import frc.Mechanisms.elevator.CatzElevator;
+import frc.Mechanisms.intake.CatzIntake;
 import frc.robot.*;
 
 @SuppressWarnings("unused")
@@ -120,6 +123,8 @@ public class CatzAutonomous
 
         while(!done)
         {
+            CatzDrivetrain.getInstance().drivetrainPeriodic();
+            
             time = autonTimer.get();
 
             if(time > maxTime)
