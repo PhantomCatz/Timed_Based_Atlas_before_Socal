@@ -69,7 +69,7 @@ public class ElevatorIOReal implements ElevatorIO
         elevatorMtr.config_kI(0, CatzConstants.ElevatorConstants.ELEVATOR_KI_HIGH);
         elevatorMtr.config_kD(0, CatzConstants.ElevatorConstants.ELEVATOR_KD_HIGH);
     
-    
+        elevatorMtr.configOpenloopRamp(4.0);
     
         elevatorMtr.config_IntegralZone(0, 2000.0);//TBD should go away once feet foward
     

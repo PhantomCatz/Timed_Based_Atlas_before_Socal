@@ -68,6 +68,8 @@ public class ArmIOReal implements ArmIO
         armMtr.configAllowableClosedloopError(0, ARM_CLOSELOOP_ERROR);
     
         armMtr.set(ControlMode.PercentOutput, MANUAL_CONTROL_PWR_OFF);
+
+        armMtr.configOpenloopRamp(1.5);
     
     }
 

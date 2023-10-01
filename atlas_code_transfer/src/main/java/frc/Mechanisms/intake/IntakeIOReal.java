@@ -8,6 +8,7 @@ import com.ctre.phoenix.sensors.AbsoluteSensorRange;
 import com.ctre.phoenix.sensors.SensorInitializationStrategy;
 
 import frc.robot.CatzConstants;
+import frc.robot.CatzConstants.IntakeConstants;
 
 public class IntakeIOReal implements IntakeIO 
 {
@@ -56,7 +57,7 @@ public class IntakeIOReal implements IntakeIO
 
 
     private final double SOFT_LIMIT_FORWARD = 0.0; //4876  + WRIST_ABS_ENC_OFFSET;  //3887
-    private final double SOFT_LIMIT_REVERSE = -8900.0; //-798.0 + WRIST_ABS_ENC_OFFSET; //-1787     //TBD
+    private final double SOFT_LIMIT_REVERSE = -5850.0; //-798.0 + WRIST_ABS_ENC_OFFSET; //-1787     //TBD
 
 
 
@@ -81,9 +82,12 @@ public class IntakeIOReal implements IntakeIO
         wristMtr = new WPI_TalonFX(WRIST_MC_ID);
 
         wristMtr.configFactoryDefault();
-
-        wristMtr.configIntegratedSensorInitializationStrategy(SensorInitializationStrategy.BootToAbsolutePosition);
-        wristMtr.configIntegratedSensorAbsoluteRange(AbsoluteSensorRange.Unsigned_0_to_360);
+        /*
+        * Code is functional in relative position...due to the gearings of the motor enc that causes many different positions of the intake to 
+        *correlate with a potition on the motor encoder
+        */    
+      wristMtr.configIntegratedSensorInitializationStrategy(SensorInitializationStrategy.BootToZero);
+       // wristMtr.configIntegratedSensorAbsoluteRange(AbsoluteSensorRange.Unsigned_0_to_360); 
         wristMtr.configIntegratedSensorOffset(0.0);
         
         wristMtr.setNeutralMode(NeutralMode.Brake);
@@ -94,10 +98,13 @@ public class IntakeIOReal implements IntakeIO
         wristMtr.configForwardSoftLimitEnable(true);                  
         wristMtr.configReverseSoftLimitEnable(true);
 
-        wristCurrentLimit  = new SupplyCurrentLimitConfiguration(ENABLE_CURRENT_LIMIT, CURRENT_LIMIT_AMPS, 
-                                                                                       CURRENT_LIMIT_TRIGGER_AMPS, 
-                                                                                       CURRENT_LIMIT_TIMEOUT_SECONDS);        
+        wristCurrentLimit  = new SupplyCurrentLimitConfiguration(ENABLE_CURRENT_LIMIT, 
+                                                                 CURRENT_LIMIT_AMPS, 
+                                                                 CURRENT_LIMIT_TRIGGER_AMPS, 
+                                                                 CURRENT_LIMIT_TIMEOUT_SECONDS);        
         wristMtr.configSupplyCurrentLimit(wristCurrentLimit);
+
+        wristMtr.configOpenloopRamp(0.5);
     }
 
     @Override
@@ -118,12 +125,6 @@ public class IntakeIOReal implements IntakeIO
     public void rollersOnIO(double rollerPwrIO) 
     {
         rollersMtr.set(ControlMode.PercentOutput, rollerPwrIO);
-    }
-
-    @Override
-    public void intakeManualHoldingIO(double targetHoldingPwrIO) 
-    {
-        wristMtr.set(ControlMode.PercentOutput, targetHoldingPwrIO);
     }
 
     @Override

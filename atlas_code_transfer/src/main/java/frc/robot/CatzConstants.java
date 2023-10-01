@@ -109,50 +109,50 @@ public final class CatzConstants {
     //----------------------------------------------------------------------------------------------
     //  Wrist encoder & Position Values
     //----------------------------------------------------------------------------------------------
-    public static final int    WRIST_ENC_CAN_ID = 13; 
 
 
-    public static final double ENC_TO_INTAKE_GEAR_RATIO =  46.0/18.0;
-    public static final double WRIST_CNTS_PER_DEGREE    = 46.459; //(4096.0 * ENC_TO_INTAKE_GEAR_RATIO) / 360.0;
+
+    private static final double ENC_TO_INTAKE_GEAR_RATIO =  46.0/18.0 * 22.0/10.0;
+    public static final double WRIST_CNTS_PER_DEGREE    = (2096.0 * ENC_TO_INTAKE_GEAR_RATIO) / 360.0;
 
 
-    public static final double MANUAL_HOLD_STEP_SIZE = 1.5;       
+    public static final double MANUAL_HOLD_STEP_SIZE = 0.5;       
 
     //TBD - ADD comment for ref point
     public static final double CENTER_OF_MASS_OFFSET_DEG     = 177.0; 
     public static final double WRIST_ABS_ENC_OFFSET_DEG = 0.0; //Set to make stow pos equal to 0
-    public static final double WRIST_ABS_ENC_OFFSET = WRIST_ABS_ENC_OFFSET_DEG * WRIST_CNTS_PER_DEGREE;//-989.0; //Negative value means abs enc 0 is above intake angle 0   
+    private static final double WRIST_ABS_ENC_OFFSET = WRIST_ABS_ENC_OFFSET_DEG * WRIST_CNTS_PER_DEGREE;//-989.0; //Negative value means abs enc 0 is above intake angle 0   
     
-    public static final double STOW_ENC_POS               =  0.0 + WRIST_ABS_ENC_OFFSET_DEG;//4872.0 + WRIST_ABS_ENC_OFFSET; //3883
-    public static final double STOW_CUTOFF                =  -7.232 + WRIST_ABS_ENC_OFFSET_DEG;// + WRIST_ABS_ENC_OFFSET; //3670
+    public static final double STOW_DEG_POS               =  -20.0 + WRIST_ABS_ENC_OFFSET_DEG;//4872.0 + WRIST_ABS_ENC_OFFSET; //3883
+    public static final double STOW_CUTOFF_DEG                =  -30.232 + WRIST_ABS_ENC_OFFSET_DEG;// + WRIST_ABS_ENC_OFFSET; //3670
 
-    public static final double INTAKE_CUBE_ENC_POS        =  -147.000 + WRIST_ABS_ENC_OFFSET_DEG;//1324.0 + WRIST_ABS_ENC_OFFSET;    //-335
-    public static final double INTAKE_CONE_ENC_POS_GROUND =  -184.524 + WRIST_ABS_ENC_OFFSET_DEG;//-306.0  + WRIST_ABS_ENC_OFFSET;  //-1295  
-    public static final double INTAKE_CONE_ENC_POS_SINGLE =  -116.400 + WRIST_ABS_ENC_OFFSET_DEG;//2089.0 + WRIST_ABS_ENC_OFFSET;  //1100 //TBD should we continue using inches or should we reply on counts
+    public static final double INTAKE_CUBE_DEG_POS        =  -140.000 + WRIST_ABS_ENC_OFFSET_DEG;//1324.0 + WRIST_ABS_ENC_OFFSET;    //-335
+    public static final double INTAKE_CONE_DEG_POS_GROUND =  -150.524 + WRIST_ABS_ENC_OFFSET_DEG;//-306.0  + WRIST_ABS_ENC_OFFSET;  //-1295  
+    public static final double INTAKE_CONE_DEG_POS_SINGLE =  -100.400 + WRIST_ABS_ENC_OFFSET_DEG;//2089.0 + WRIST_ABS_ENC_OFFSET;  //1100
 
-    public static final double SCORE_CUBE_ENC_POS         =  -104.000 + WRIST_ABS_ENC_OFFSET_DEG;//1859.0 + WRIST_ABS_ENC_OFFSET;  //870     // Applies to low-mid-high
+    public static final double SCORE_CUBE_DEG_POS         =  -80.000 + WRIST_ABS_ENC_OFFSET_DEG;//1859.0 + WRIST_ABS_ENC_OFFSET;  //870     // Applies to low-mid-high
 
-    public static final double SCORE_CONE_HIGH_ENC_POS    =  -153.000 + WRIST_ABS_ENC_OFFSET_DEG;//289.0 + WRIST_ABS_ENC_OFFSET;  //-700
-    public static final double SCORE_CONE_MID_ENC_POS     = INTAKE_CONE_ENC_POS_GROUND; //TBD verify if its the same as high
-    public static final double SCORE_CONE_LOW_ENC_POS     = INTAKE_CONE_ENC_POS_GROUND; //TBD
+    public static final double SCORE_CONE_HIGH_DEG_POS    =  -153.000 + WRIST_ABS_ENC_OFFSET_DEG;//289.0 + WRIST_ABS_ENC_OFFSET;  //-700
+    public static final double SCORE_CONE_MID_DEG_POS     = INTAKE_CONE_DEG_POS_GROUND; //TBD verify if its the same as high
+    public static final double SCORE_CONE_LOW_DEG_POS     = INTAKE_CONE_DEG_POS_GROUND; //TBD
 
 
-    public static final double SOFT_LIMIT_FORWARD = 0.0; //4876  + WRIST_ABS_ENC_OFFSET;  //3887
-    public static final double SOFT_LIMIT_REVERSE = -8900.0; //-798.0 + WRIST_ABS_ENC_OFFSET; //-1787     //TBD
+    public static  final double SOFT_LIMIT_FORWARD = 0.0; //4876  + WRIST_ABS_ENC_OFFSET;  //3887
+    public static  final double SOFT_LIMIT_REVERSE = -5850.0; //-798.0 + WRIST_ABS_ENC_OFFSET; //-1787     //TBD
 
-    public static final double GROSS_kP = 0.002472;//0.00009; //lc
-    public static final double GROSS_kI = 0.0;//000040;
-    public static final double GROSS_kD = 0.000291;//0.000007;
+    public static  final double GROSS_kP = 0.005;//0.0070;//0.00009; 
+    public static  final double GROSS_kI = 0.0;//000040;
+    public static  final double GROSS_kD = 0.0002;//0.000007;
 
-    public static final double FINE_kP = 0.005234;//0.00009; 
-    public static final double FINE_kI = 0.0;//000008;
-    public static final double FINE_kD = 0.000291;//0.000007;
+    public static  final double FINE_kP = 0.003;//0.00009; 
+    public static  final double FINE_kI = 0.0;//000008;
+    public static  final double FINE_kD = 0.0007;//0.000291;//0.000007;
     
-    public final static double MAX_GRAVITY_FF = 0.055; //0.09
+    public static  final double MAX_GRAVITY_FF = 0.09; //0.055
 
 
-    public static final double INTAKE_POS_ERROR_THRESHOLD_DEG = 5.0;
-    public static final double PID_FINE_GROSS_THRESHOLD_DEG = 17.0;
+    public static final double INTAKE_POS_ERROR_THRESHOLD_ENC = 400;
+    public static final double PID_FINE_GROSS_THRESHOLD_ENC = 700.0;
   }
 
 

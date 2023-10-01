@@ -26,6 +26,8 @@ import frc.Mechanisms.arm.CatzArm;
 import frc.Mechanisms.drivetrain.CatzDrivetrain;
 import frc.Mechanisms.elevator.CatzElevator;
 import frc.Mechanisms.intake.CatzIntake;
+import frc.robot.CatzConstants.ArmConstants;
+import frc.robot.CatzConstants.ElevatorConstants;
 import frc.Autonomous.*;
 
 import org.littletonrobotics.junction.LoggedRobot;
@@ -315,7 +317,7 @@ public class Robot extends LoggedRobot
   
     //debug should be commented out for comp
 
-    //intake.smartdashboardIntakeDebug();      
+    intake.smartdashboardIntakeDebug();     
   }
 
 
@@ -365,7 +367,7 @@ public class Robot extends LoggedRobot
     currentTime.start();
 
     dataCollection.startDataCollection();
-    //balance.StopBalancing(); could possible affect datacollection
+    balance.StopBalancing(); 
 
     currentGameModeLED = gameModeLED.TeleOp;
   }
@@ -417,6 +419,7 @@ public class Robot extends LoggedRobot
   
                      
     //Mechanism Procs
+     
     elevator.cmdProcElevator(xboxElevatorManualPwr,  // Manual and Manual Hold Elevator Power
                             xboxElevatorManualMode,  // Enter Manual Mode
                             commandedStateUpdate);
@@ -469,6 +472,9 @@ public class Robot extends LoggedRobot
   @Override
   public void disabledInit()
   {
+    intake.resetPID();
+    elevator.elevatorManual(ElevatorConstants.ELEVATOR_MANUAL_CONTROL_PWR_OFF);
+    arm.setArmPwr(ArmConstants.MANUAL_CONTROL_PWR_OFF);
 
     
     System.out.println( "intake temp " + intake.intakeWristTemp());
